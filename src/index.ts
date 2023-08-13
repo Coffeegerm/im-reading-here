@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import loggerMiddleware from "./middleware/logger";
+import { SearchController } from "./controllers/search";
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.use(loggerMiddleware);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+app.use("/api/search/books", SearchController.search);
 
 app.listen(port, () => {
   console.log(`We have lift off at http://localhost:${port}`);
