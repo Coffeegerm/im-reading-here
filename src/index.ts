@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: [`http://localhost:${port}`],
+    origin: [`http://localhost:${port}`, "http://127.0.0.1:5173"],
   })
 );
 
@@ -21,10 +21,12 @@ app.use(
 app.use(loggerMiddleware);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("I'm reading here!");
 });
 
 app.use("/api/search/books", SearchController.search);
+
+app.use('/api/search/books/:id', SearchController.searchById)
 
 app.listen(port, () => {
   console.log(`We have lift off at http://localhost:${port}`);
