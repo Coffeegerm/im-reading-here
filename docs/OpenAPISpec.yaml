@@ -1,0 +1,1641 @@
+openapi: 3.1.0
+info:
+  title: Book Club API
+  version: 1.0.0
+  description: |
+    REST API for the Book Club platform. All successful responses are wrapped
+    in a standard envelope: { data, meta }. Errors use { error, meta }.
+
+servers:
+  - url: /api/v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Shelves
+  - name: Books
+  - name: Clubs
+  - name: Memberships
+  - name: Meetings
+  - name: RSVPs
+  - name: Polls
+  - name: ReadingPlans
+  - name: Notifications
+  - name: Realtime
+  - name: Uploads
+  - name: Admin
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/OkHealth'
+
+  /version:
+    get:
+      tags: [Health]
+      summary: Build/version info
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/OkVersion'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email/password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkAuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkAuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and revoke refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogoutRequest' }
+      responses:
+        '204':
+          description: No Content
+
+  /auth/providers/{provider}/callback:
+    post:
+      tags: [Auth]
+      summary: OAuth provider callback
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: false
+      responses:
+        '200': { $ref: '#/components/responses/OkAuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      responses:
+        '200': { $ref: '#/components/responses/OkUser' }
+
+    patch:
+      tags: [Users]
+      summary: Update current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMeRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkUser' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a user's public profile (visibility-aware)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkUser' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /users/{id}/clubs:
+    get:
+      tags: [Users]
+      summary: List user's clubs (visibility-aware)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedClubs' }
+
+  /users/{id}/shelves:
+    get:
+      tags: [Shelves]
+      summary: Get user's three shelves (TBR, READ, DNF)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeShelves'
+
+  /users/{id}/shelves/{type}/items:
+    get:
+      tags: [Shelves]
+      summary: List items on a given shelf
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/shelfType'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedShelfItems' }
+
+  /me/shelves/{type}/items:
+    post:
+      tags: [Shelves]
+      summary: Add a book to my shelf (idempotent per (shelf, book))
+      parameters:
+        - $ref: '#/components/parameters/shelfType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddShelfItemRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedShelfItem' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /me/shelf-items/{itemId}:
+    patch:
+      tags: [Shelves]
+      summary: Update/move a shelf item (rating/review/moveToType)
+      parameters:
+        - $ref: '#/components/parameters/itemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateShelfItemRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkShelfItem' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Shelves]
+      summary: Remove a shelf item
+      parameters:
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '204': { description: No Content }
+
+  /books/{id}:
+    get:
+      tags: [Books]
+      summary: Get a book by id
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkBook' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /books:
+    get:
+      tags: [Books]
+      summary: Search local book catalog
+      parameters:
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/author'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedBooks' }
+
+  /books/import:
+    post:
+      tags: [Books]
+      summary: Import/normalize a book from external provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportBookRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedBook' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /clubs:
+    get:
+      tags: [Clubs]
+      summary: List clubs
+      parameters:
+        - $ref: '#/components/parameters/mine'
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedClubs' }
+    post:
+      tags: [Clubs]
+      summary: Create a club
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateClubRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedClub' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /clubs/{id}:
+    get:
+      tags: [Clubs]
+      summary: Get club details (public or member)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkClub' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Clubs]
+      summary: Update club (owner/admin)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateClubRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkClub' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Clubs]
+      summary: Delete club (owner)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204': { description: No Content }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /clubs/{id}/members:
+    get:
+      tags: [Memberships]
+      summary: List club members
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/role'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedMembers' }
+
+  /clubs/{id}/memberships:
+    post:
+      tags: [Memberships]
+      summary: Join/request membership (auto-approve if public)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinClubRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkMembership' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /clubs/{id}/memberships/{userId}:
+    patch:
+      tags: [Memberships]
+      summary: Update another member's role/status (admin/owner)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMembershipRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkMembership' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Memberships]
+      summary: Remove a member (admin/owner) or self-leave
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '204': { description: No Content }
+
+  /clubs/{id}/meetings:
+    get:
+      tags: [Meetings]
+      summary: List meetings for a club
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/when'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedMeetings' }
+    post:
+      tags: [Meetings]
+      summary: Create meeting (admin/owner)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMeetingRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedMeeting' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /meetings/{id}:
+    get:
+      tags: [Meetings]
+      summary: Get a meeting
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkMeeting' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Meetings]
+      summary: Update a meeting (admin/owner)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMeetingRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkMeeting' }
+
+  /meetings/{id}/attendees:
+    get:
+      tags: [RSVPs]
+      summary: List attendees with RSVP statuses
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedAttendees' }
+
+  /meetings/{id}/rsvp:
+    post:
+      tags: [RSVPs]
+      summary: Set my RSVP for a meeting
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RsvpRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkRsvp' }
+
+  /clubs/{id}/polls:
+    get:
+      tags: [Polls]
+      summary: List polls for a club
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/pollStatus'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedPolls' }
+    post:
+      tags: [Polls]
+      summary: Create poll (admin by default)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePollRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedPoll' }
+
+  /polls/{id}:
+    get:
+      tags: [Polls]
+      summary: Get poll
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkPoll' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Polls]
+      summary: Update poll (status OPEN/CLOSED)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePollRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkPoll' }
+
+  /polls/{id}/options:
+    post:
+      tags: [Polls]
+      summary: Add a poll option
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddPollOptionRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedPollOption' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /polls/{id}/options/{optionId}:
+    delete:
+      tags: [Polls]
+      summary: Delete a poll option (before votes or admin)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/optionId'
+      responses:
+        '204': { description: No Content }
+
+  /polls/{id}/votes:
+    post:
+      tags: [Polls]
+      summary: Cast a vote (approval MVP, RCV v2)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CastApprovalVoteRequest'
+                - $ref: '#/components/schemas/CastRcvVoteRequest'
+      responses:
+        '200': { $ref: '#/components/responses/OkVoteReceipt' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /polls/{id}/close:
+    post:
+      tags: [Polls]
+      summary: Close poll and compute result
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkPollCloseResult' }
+
+  /polls/{id}/results:
+    get:
+      tags: [Polls]
+      summary: Get poll aggregates (live if OPEN)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200': { $ref: '#/components/responses/OkPollResults' }
+
+  /clubs/{id}/reading-plans:
+    get:
+      tags: [ReadingPlans]
+      summary: List reading plans for a club
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedReadingPlans' }
+    post:
+      tags: [ReadingPlans]
+      summary: Create a reading plan (admin)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateReadingPlanRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/CreatedReadingPlan' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /clubs/{id}/reading-plans/{planId}:
+    get:
+      tags: [ReadingPlans]
+      summary: Get a reading plan
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/planId'
+      responses:
+        '200': { $ref: '#/components/responses/OkReadingPlan' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [ReadingPlans]
+      summary: Update/cancel a reading plan
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/planId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReadingPlanRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkReadingPlan' }
+
+  /me/notifications:
+    get:
+      tags: [Notifications]
+      summary: List my notifications
+      parameters:
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { $ref: '#/components/responses/OkPaginatedNotifications' }
+
+  /me/notifications/{notificationId}/read:
+    post:
+      tags: [Notifications]
+      summary: Mark a notification as read
+      parameters:
+        - $ref: '#/components/parameters/notificationId'
+      responses:
+        '204': { description: No Content }
+
+  /me/notifications/read-all:
+    post:
+      tags: [Notifications]
+      summary: Mark all notifications as read
+      responses:
+        '204': { description: No Content }
+
+  /me/settings/notifications:
+    patch:
+      tags: [Notifications]
+      summary: Update notification preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificationSettingsRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkNotificationSettings' }
+
+  /realtime/token:
+    post:
+      tags: [Realtime]
+      summary: Create a short-lived token for socket channels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RealtimeTokenRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkRealtimeToken' }
+
+  /uploads/presign:
+    post:
+      tags: [Uploads]
+      summary: Request a presigned S3 upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PresignRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/OkPresign' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    itemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    optionId:
+      name: optionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    planId:
+      name: planId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    notificationId:
+      name: notificationId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [google, apple, github]
+    shelfType:
+      name: type
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ShelfType'
+    role:
+      name: role
+      in: query
+      schema:
+        type: string
+        enum: [OWNER, ADMIN, MEMBER]
+    when:
+      name: when
+      in: query
+      schema:
+        type: string
+        enum: [upcoming, past]
+    pollStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [OPEN, CLOSED]
+    cursor:
+      name: cursor
+      in: query
+      schema: { type: string, nullable: true }
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    q:
+      name: q
+      in: query
+      schema: { type: string }
+    author:
+      name: author
+      in: query
+      schema: { type: string }
+    mine:
+      name: mine
+      in: query
+      schema: { type: boolean }
+
+  responses:
+    OkHealth:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeHealth'
+    OkVersion:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeVersion'
+    OkUser:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeUser'
+    OkBook:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeBook'
+    OkClub:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeClub'
+    OkMeeting:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeMeeting'
+    OkPoll:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePoll'
+    OkShelfItem:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeShelfItem'
+    CreatedShelfItem:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeShelfItem'
+    CreatedBook:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeBook'
+    CreatedClub:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeClub'
+    CreatedMeeting:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeMeeting'
+    CreatedPoll:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePoll'
+    CreatedPollOption:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePollOption'
+    CreatedReadingPlan:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeReadingPlan'
+    OkPaginatedBooks:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedBooks'
+    OkPaginatedClubs:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedClubs'
+    OkPaginatedMembers:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedMembers'
+    OkPaginatedMeetings:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedMeetings'
+    OkPaginatedShelfItems:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedShelfItems'
+    OkPaginatedPolls:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedPolls'
+    OkPaginatedReadingPlans:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedReadingPlans'
+    OkPaginatedNotifications:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePaginatedNotifications'
+    OkAuthTokens:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeAuth'
+    OkRsvp:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeRsvp'
+    OkVoteReceipt:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeVoteReceipt'
+    OkPollCloseResult:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePollClose'
+    OkPollResults:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopePollResults'
+    OkReadingPlan:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeReadingPlan'
+    OkNotificationSettings:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvelopeNotificationSettings'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorUnauthorized'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorForbidden'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorNotFound'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorConflict'
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorValidation'
+    Unprocessable:
+      description: Unprocessable entity (business rule)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorUnprocessable'
+
+  schemas:
+    # ========= Base primitives =========
+    UUID:
+      type: string
+      format: uuid
+    DateTime:
+      type: string
+      format: date-time
+
+    ShelfType:
+      type: string
+      enum: [TBR, READ, DNF]
+    MemberRole:
+      type: string
+      enum: [OWNER, ADMIN, MEMBER]
+    MemberStatus:
+      type: string
+      enum: [ACTIVE, PENDING, BANNED]
+    MeetingMode:
+      type: string
+      enum: [IN_PERSON, VIRTUAL]
+    RsvpStatus:
+      type: string
+      enum: [GOING, MAYBE, NO]
+    PollStatus:
+      type: string
+      enum: [OPEN, CLOSED]
+    PollMethod:
+      type: string
+      enum: [APPROVAL, RCV]
+    Visibility:
+      type: string
+      enum: [public, club, private]
+
+    # ========= Envelopes =========
+    Meta:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId: { $ref: '#/components/schemas/UUID' }
+        nextCursor:
+          type: [string, 'null']
+          nullable: true
+    Envelope:
+      type: object
+      properties:
+        data: {}
+        meta: { $ref: '#/components/schemas/Meta' }
+      required: [data, meta]
+
+    # ========= Error envelopes =========
+    ErrorDetail:
+      type: object
+      properties:
+        path: { type: string }
+        reason: { type: string }
+    ErrorBase:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items: { $ref: '#/components/schemas/ErrorDetail' }
+        meta: { $ref: '#/components/schemas/Meta' }
+      required: [error]
+    ErrorUnauthorized:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error: { code: UNAUTHORIZED, message: "Missing or invalid token" }
+    ErrorForbidden:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error: { code: FORBIDDEN, message: "Insufficient permissions" }
+    ErrorNotFound:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error: { code: NOT_FOUND, message: "Resource not found" }
+    ErrorConflict:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error: { code: CONFLICT, message: "Already exists / duplicate" }
+    ErrorValidation:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error:
+          code: VALIDATION_ERROR
+          message: Invalid input
+          details: [{ path: "body.startsAt", reason: "Must be ISO 8601" }]
+    ErrorUnprocessable:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+      example:
+        error:
+          code: UNPROCESSABLE
+          message: "Business rule violation"
+
+    # ========= Core resources =========
+    User:
+      type: object
+      required: [id, name, shelvesVisibleTo]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        email: { type: string, format: email }
+        name: { type: string }
+        avatarUrl: { type: [string, 'null'], nullable: true }
+        shelvesVisibleTo: { $ref: '#/components/schemas/Visibility' }
+
+    Book:
+      type: object
+      required: [id, title, authors]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        title: { type: string }
+        authors:
+          type: array
+          items: { type: string }
+        coverUrl: { type: [string, 'null'], nullable: true }
+        isbn10: { type: [string, 'null'], nullable: true }
+        isbn13: { type: [string, 'null'], nullable: true }
+        openLibraryId: { type: [string, 'null'], nullable: true }
+        publishedYear: { type: [integer, 'null'], nullable: true }
+        subjects:
+          type: array
+          items: { type: string }
+
+    Shelf:
+      type: object
+      required: [id, type]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        type: { $ref: '#/components/schemas/ShelfType' }
+
+    ShelfItem:
+      type: object
+      required: [id, book, addedAt]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        shelfId: { $ref: '#/components/schemas/UUID' }
+        book: { $ref: '#/components/schemas/Book' }
+        addedAt: { $ref: '#/components/schemas/DateTime' }
+        rating:
+          type: [integer, 'null']
+          nullable: true
+          minimum: 1
+          maximum: 5
+        review: { type: [string, 'null'], nullable: true }
+        finishedAt: { type: [string, 'null'], format: date-time, nullable: true }
+
+    Club:
+      type: object
+      required: [id, name, isPublic, ownerId]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        name: { type: string }
+        description: { type: [string, 'null'], nullable: true }
+        isPublic: { type: boolean }
+        ownerId: { $ref: '#/components/schemas/UUID' }
+        membersCount: { type: integer }
+
+    Membership:
+      type: object
+      required: [id, userId, clubId, role, status]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        userId: { $ref: '#/components/schemas/UUID' }
+        clubId: { $ref: '#/components/schemas/UUID' }
+        role: { $ref: '#/components/schemas/MemberRole' }
+        status: { $ref: '#/components/schemas/MemberStatus' }
+        joinedAt: { $ref: '#/components/schemas/DateTime' }
+
+    Meeting:
+      type: object
+      required: [id, clubId, startsAt, mode]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        clubId: { $ref: '#/components/schemas/UUID' }
+        startsAt: { $ref: '#/components/schemas/DateTime' }
+        endsAt: { type: [string, 'null'], format: date-time, nullable: true }
+        mode: { $ref: '#/components/schemas/MeetingMode' }
+        location: { type: [string, 'null'], nullable: true }
+        videoLink: { type: [string, 'null'], nullable: true }
+        agenda: { type: [string, 'null'], nullable: true }
+        currentBookId: { type: [string, 'null'], format: uuid, nullable: true }
+
+    PollOption:
+      type: object
+      required: [id, pollId, book]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        pollId: { $ref: '#/components/schemas/UUID' }
+        book: { $ref: '#/components/schemas/Book' }
+        approvals: { type: integer, description: "Derived for approval method" }
+
+    Poll:
+      type: object
+      required: [id, clubId, status, method, options]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        clubId: { $ref: '#/components/schemas/UUID' }
+        meetingId: { type: [string, 'null'], format: uuid, nullable: true }
+        status: { $ref: '#/components/schemas/PollStatus' }
+        method: { $ref: '#/components/schemas/PollMethod' }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/PollOption' }
+        createdBy: { $ref: '#/components/schemas/UUID' }
+        createdAt: { $ref: '#/components/schemas/DateTime' }
+
+    PollResultRound:
+      type: object
+      properties:
+        round: { type: integer }
+        tallies:
+          type: array
+          items:
+            type: object
+            properties:
+              optionId: { $ref: '#/components/schemas/UUID' }
+              votes: { type: integer }
+
+    ReadingPlan:
+      type: object
+      required: [id, clubId, book, startMeetingId, endMeetingId]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        clubId: { $ref: '#/components/schemas/UUID' }
+        book: { $ref: '#/components/schemas/Book' }
+        startMeetingId: { $ref: '#/components/schemas/UUID' }
+        endMeetingId: { $ref: '#/components/schemas/UUID' }
+
+    Notification:
+      type: object
+      required: [id, type, createdAt, read]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        type: { type: string, description: "poll_open|poll_close|meeting_reminder|invite|..." }
+        payload: { type: object, additionalProperties: true }
+        createdAt: { $ref: '#/components/schemas/DateTime' }
+        read: { type: boolean }
+
+    NotificationSettings:
+      type: object
+      properties:
+        email:
+          type: object
+          properties:
+            pollOpen: { type: boolean }
+            pollClose: { type: boolean }
+            meetingReminder: { type: boolean }
+
+    # ========= Requests =========
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+
+    LogoutRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+
+    UpdateMeRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        avatarUrl: { type: string }
+        shelvesVisibleTo: { $ref: '#/components/schemas/Visibility' }
+
+    AddShelfItemRequest:
+      type: object
+      required: [bookId]
+      properties:
+        bookId: { $ref: '#/components/schemas/UUID' }
+
+    UpdateShelfItemRequest:
+      type: object
+      properties:
+        moveToType: { $ref: '#/components/schemas/ShelfType' }
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review: { type: string, maxLength: 5000 }
+        finishedAt: { $ref: '#/components/schemas/DateTime' }
+
+    ImportBookRequest:
+      type: object
+      properties:
+        isbn13: { type: string }
+        isbn10: { type: string }
+        openLibraryId: { type: string }
+      anyOf:
+        - required: [isbn13]
+        - required: [isbn10]
+        - required: [openLibraryId]
+
+    CreateClubRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        isPublic: { type: boolean, default: false }
+
+    UpdateClubRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        isPublic: { type: boolean }
+
+    JoinClubRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [join, request]
+
+    UpdateMembershipRequest:
+      type: object
+      properties:
+        role: { $ref: '#/components/schemas/MemberRole' }
+        status: { $ref: '#/components/schemas/MemberStatus' }
+
+    CreateMeetingRequest:
+      type: object
+      required: [startsAt, mode]
+      properties:
+        startsAt: { $ref: '#/components/schemas/DateTime' }
+        endsAt: { $ref: '#/components/schemas/DateTime' }
+        mode: { $ref: '#/components/schemas/MeetingMode' }
+        location: { type: string }
+        videoLink: { type: string }
+        agenda: { type: string, maxLength: 5000 }
+        currentBookId: { $ref: '#/components/schemas/UUID' }
+      allOf:
+        - description: |
+            Validation rules:
+              - startsAt < endsAt
+              - If mode == VIRTUAL then videoLink required
+              - If mode == IN_PERSON then location required
+
+    UpdateMeetingRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateMeetingRequest'
+
+    RsvpRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/RsvpStatus' }
+
+    CreatePollRequest:
+      type: object
+      properties:
+        meetingId: { $ref: '#/components/schemas/UUID' }
+        method: { $ref: '#/components/schemas/PollMethod' }
+      description: |
+        If meetingId is within an active ReadingPlan, creation should be blocked unless an admin override exists.
+
+    UpdatePollRequest:
+      type: object
+      properties:
+        status: { $ref: '#/components/schemas/PollStatus' }
+
+    AddPollOptionRequest:
+      type: object
+      required: [bookId]
+      properties:
+        bookId: { $ref: '#/components/schemas/UUID' }
+
+    CastApprovalVoteRequest:
+      type: object
+      required: [optionId, approve]
+      properties:
+        optionId: { $ref: '#/components/schemas/UUID' }
+        approve: { type: boolean }
+
+    CastRcvVoteRequest:
+      type: object
+      required: [rankings]
+      properties:
+        rankings:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [optionId, rank]
+            properties:
+              optionId: { $ref: '#/components/schemas/UUID' }
+              rank: { type: integer, minimum: 1 }
+
+    CreateReadingPlanRequest:
+      type: object
+      required: [bookId, startMeetingId, endMeetingId]
+      properties:
+        bookId: { $ref: '#/components/schemas/UUID' }
+        startMeetingId: { $ref: '#/components/schemas/UUID' }
+        endMeetingId: { $ref: '#/components/schemas/UUID' }
+      description: |
+        Meetings must belong to same club; start <= end; no overlapping plans for same meetings.
+
+    UpdateReadingPlanRequest:
+      type: object
+      properties:
+        startMeetingId: { $ref: '#/components/schemas/UUID' }
+        endMeetingId: { $ref: '#/components/schemas/UUID' }
+        cancel: { type: boolean }
+
+    NotificationSettingsRequest:
+      type: object
+      properties:
+        email:
+          type: object
+          properties:
+            pollOpen: { type: boolean }
+            pollClose: { type: boolean }
+            meetingReminder: { type: boolean }
+
+    RealtimeTokenRequest:
+      type: object
+      required: [channels]
+      properties:
+        channels:
+          type: array
+          minItems: 1
+          items: { type: string, description: "e.g., poll:{uuid}, meeting:{uuid}" }
+
+    PresignRequest:
+      type: object
+      required: [type, purpose]
+      properties:
+        type: { type: string, example: image/jpeg }
+        purpose:
+          type: string
+          enum: [cover, avatar, export]
+
+    # ========= Enveloped data =========
+    EnvelopeUser:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/User' }
+
+    EnvelopeBook:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/Book' }
+
+    EnvelopeClub:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/Club' }
+
+    EnvelopeMeeting:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/Meeting' }
+
+    EnvelopePoll:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/Poll' }
+
+    EnvelopePollOption:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/PollOption' }
+
+    EnvelopeShelfItem:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/ShelfItem' }
+
+    EnvelopeReadingPlan:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/ReadingPlan' }
+
+    EnvelopeAuth:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          required: [accessToken, refreshToken]
+          properties:
+            accessToken: { type: string }
+            refreshToken: { type: string }
+            user: { $ref: '#/components/schemas/User' }
+
+    EnvelopeRsvp:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            meetingId: { $ref: '#/components/schemas/UUID' }
+            status: { $ref: '#/components/schemas/RsvpStatus' }
+
+    EnvelopeVoteReceipt:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            pollId: { $ref: '#/components/schemas/UUID' }
+            accepted: { type: boolean }
+
+    EnvelopePollClose:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            pollId: { $ref: '#/components/schemas/UUID' }
+            method: { $ref: '#/components/schemas/PollMethod' }
+            winningBookId: { $ref: '#/components/schemas/UUID' }
+            rounds:
+              type: array
+              items: { $ref: '#/components/schemas/PollResultRound' }
+
+    EnvelopePollResults:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            pollId: { $ref: '#/components/schemas/UUID' }
+            method: { $ref: '#/components/schemas/PollMethod' }
+            options:
+              type: array
+              items:
+                type: object
+                properties:
+                  optionId: { $ref: '#/components/schemas/UUID' }
+                  approvals: { type: integer }
+                  percent: { type: number }
+
+    EnvelopeShelves:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            tbr: { $ref: '#/components/schemas/Shelf' }
+            read: { $ref: '#/components/schemas/Shelf' }
+            dnf: { $ref: '#/components/schemas/Shelf' }
+
+    EnvelopeNotificationSettings:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/NotificationSettings' }
+
+    EnvelopeHealth:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            status: { type: string, example: ok }
+
+    EnvelopeVersion:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: object
+          properties:
+            commit: { type: string }
+            buildTime: { $ref: '#/components/schemas/DateTime' }
+            schemaVersion: { type: string }
+
+    EnvelopePaginatedBooks:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Book' }
+
+    EnvelopePaginatedClubs:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Club' }
+
+    EnvelopePaginatedMembers:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Membership' }
+
+    EnvelopePaginatedMeetings:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Meeting' }
+
+    EnvelopePaginatedShelfItems:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/ShelfItem' }
+
+    EnvelopePaginatedPolls:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Poll' }
+
+    EnvelopePaginatedReadingPlans:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/ReadingPlan' }
+
+    EnvelopePaginatedNotifications:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Notification' }
+
+    OkPresignData:
+      type: object
+      properties:
+        url: { type: string }
+        fields:
+          type: object
+          additionalProperties: true
+        uploadUrl: { type: string }
+        assetUrl: { type: string }
+
+    EnvelopePresign:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+      properties:
+        data: { $ref: '#/components/schemas/OkPresignData' }
+
+    # Aliases for responses that reference non-enveloped presets
+    responses:
+      OkPresign:
+        description: OK
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvelopePresign' }

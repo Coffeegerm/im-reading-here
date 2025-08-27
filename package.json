@@ -1,0 +1,22 @@
+{
+  "name": "im-reading-here",
+  "private": true,
+  "packageManager": "pnpm@8.15.0",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean",
+    "test": "turbo test"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.4",
+    "typescript": "^5.9.2",
+    "@types/node": "^20.19.11"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
