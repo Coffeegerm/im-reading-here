@@ -5,7 +5,44 @@ create table users (
   email text unique not null,
   name text not null,
   avatar_url text,
+  plan text not null default 'FREE', -- FREE | PREMIUM
   shelves_visible_to text not null default 'club' -- public|club|private
+);
+
+-- Core shelves
+create type shelf_type as enum ('TBR','READ','DNF');
+create table shelves (
+  id uuid primary key,
+  user_id uuid references users(id) on delete cascade,
+  type shelf_type not null,
+  unique (user_id, type)
+);
+
+-- Custom shelves
+create table custom_shelves (
+  id uuid primary key,
+  user_id uuid references users(id) on delete cascade,
+  name text not null,
+  is_archived boolean not null default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (user_id, lower(name))
+);
+
+-- Shelf items
+create table shelf_items (
+  id uuid primary key,
+  shelf_id uuid references shelves(id),
+  custom_shelf_id uuid references custom_shelves(id),
+  book_id uuid references books(id),
+  added_at timestamptz default now(),
+  rating int check (rating between 1 and 5),
+  review text,
+  finished_at timestamptz,
+  constraint core_or_custom check (
+    (shelf_id is not null and custom_shelf_id is null) or
+    (shelf_id is null and custom_shelf_id is not null)
+  )
 );
 
 -- Books
@@ -20,25 +57,6 @@ create table books (
   subjects text[]
 );
 
--- Shelves
-create type shelf_type as enum ('TBR', 'READ', 'DNF');
-create table shelves (
-  id uuid primary key,
-  user_id uuid references users(id) on delete cascade,
-  type shelf_type not null,
-  unique (user_id, type)
-);
-
-create table shelf_items (
-  id uuid primary key,
-  shelf_id uuid references shelves(id) on delete cascade,
-  book_id uuid references books(id),
-  added_at timestamptz default now(),
-  rating int check (rating between 1 and 5),
-  review text,
-  finished_at timestamptz
-);
-
 -- Clubs
 create table clubs (
   id uuid primary key,
@@ -48,7 +66,6 @@ create table clubs (
   is_public boolean default false
 );
 
--- Memberships
 create type member_role as enum ('OWNER','ADMIN','MEMBER');
 create type member_status as enum ('ACTIVE','PENDING','BANNED');
 create table memberships (
@@ -75,7 +92,7 @@ create table meetings (
   current_book_id uuid references books(id)
 );
 
--- Reading Plans
+-- Reading plans
 create table reading_plans (
   id uuid primary key,
   club_id uuid references clubs(id) on delete cascade,
@@ -84,7 +101,7 @@ create table reading_plans (
   end_meeting_id uuid references meetings(id)
 );
 
--- Polls
+-- Polls & votes
 create type poll_status as enum ('OPEN','CLOSED');
 create type poll_method as enum ('APPROVAL','RCV');
 create table polls (
@@ -122,4 +139,5 @@ create table rsvps (
   status rsvp_status not null,
   unique (meeting_id, user_id)
 );
+
 ```
