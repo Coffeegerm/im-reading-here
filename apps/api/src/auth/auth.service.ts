@@ -20,6 +20,8 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
+  private readonly SALT_ROUNDS = 12;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -39,8 +41,7 @@ export class AuthService {
     }
 
     // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
 
     // Generate email verification token
     const emailVerifyToken = crypto.randomBytes(32).toString('hex');
@@ -207,8 +208,7 @@ export class AuthService {
     }
 
     // Hash new password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
 
     // Update password and clear reset token
     await this.prisma.user.update({
