@@ -102,12 +102,17 @@ export function useLogout() {
 
       // Clear all cached data
       queryClient.clear();
+
+      // Note: AuthGuard will handle the redirect to '/' automatically
     },
     onError: (error) => {
       // Even if logout fails on server, clear local data
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       queryClient.clear();
+
+      // Note: AuthGuard will handle the redirect to '/' automatically
+
       console.error('Logout error (continuing anyway):', error);
     },
   });

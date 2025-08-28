@@ -9,8 +9,8 @@ export default function DashboardPage() {
   const { data: user } = useProfile();
   const logoutMutation = useLogout();
 
-  const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -26,8 +26,8 @@ export default function DashboardPage() {
                 <span className="text-sm text-gray-700">
                   Welcome, {user?.name}
                 </span>
-                <Button variant="outline" onClick={handleLogout}>
-                  Logout
+                <Button variant="outline" onClick={handleLogout} disabled={logoutMutation.isPending}>
+                  {logoutMutation.isPending ? 'Signing out...' : 'Logout'}
                 </Button>
               </div>
             </div>
