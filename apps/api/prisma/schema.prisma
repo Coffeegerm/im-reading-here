@@ -56,10 +56,20 @@ model User {
   avatarUrl        String?  @map("avatar_url")
   plan             String   @default("FREE") // FREE | PREMIUM
   shelvesVisibleTo String   @default("club") @map("shelves_visible_to") // public|club|private
+
+  // Authentication fields
+  passwordHash         String?   @map("password_hash") // nullable for OAuth users
+  emailVerified        Boolean   @default(false) @map("email_verified")
+  emailVerifyToken     String?   @unique @map("email_verify_token")
+  passwordResetToken   String?   @unique @map("password_reset_token")
+  passwordResetExpires DateTime? @map("password_reset_expires")
+  lastLoginAt          DateTime? @map("last_login_at")
+
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
+  refreshTokens RefreshToken[]
   shelves       Shelf[]
   customShelves CustomShelf[]
   clubs         Club[]        @relation("ClubOwner")
@@ -70,6 +80,19 @@ model User {
   rsvps         Rsvp[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String   @unique
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 model Book {
