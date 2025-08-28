@@ -98,3 +98,56 @@ export interface ApiError {
     requestId: string
   }
 }
+
+// UI Component types
+export interface ClubMember {
+  id: string
+  name: string
+  avatarUrl?: string
+}
+
+export interface BookDisplayInfo {
+  id: string
+  title: string
+  authors: string[]
+  coverUrl?: string
+  publishedYear?: number
+  rating?: number
+  shelf?: ShelfType
+  isInClub?: boolean
+}
+
+export interface ClubDisplayInfo {
+  id: string
+  name: string
+  description?: string
+  memberCount: number
+  isPublic: boolean
+  currentBook?: {
+    title: string
+    coverUrl?: string
+  }
+  nextMeeting?: {
+    date: Date
+    mode: MeetingMode
+  }
+  members?: ClubMember[]
+  userRole?: MemberRole
+}
+
+export interface MeetingDisplayInfo {
+  id: string
+  title?: string
+  startsAt: Date
+  endsAt?: Date
+  mode: MeetingMode
+  location?: string
+  videoLink?: string
+  agenda?: string
+  currentBook?: {
+    title: string
+    coverUrl?: string
+  }
+  rsvpStatus?: RsvpStatus
+  rsvpCount?: number
+}

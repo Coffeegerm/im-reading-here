@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Storybook",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["storybook"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "🚀 Start Storybook component library"
+    },
+    {
+      "label": "Build Storybook",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["build-storybook"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      },
+      "detail": "📦 Build Storybook for production"
+    }
+  ]
+}
