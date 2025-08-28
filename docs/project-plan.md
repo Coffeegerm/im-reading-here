@@ -1,20 +1,22 @@
 # Im Reading Here Project Plan
 
-Tech Stack
+## Tech Stack
 
-- Backend: TypeScript + NestJS (Fastify) + Prisma on Postgres
-- Search/Books: Open Library API → Google Books fallback, cached locally
-- Web: Next.js (React), TanStack Query, Zod, MSW
-- Mobile: React Native (Expo), shared code via Turborepo
-- Auth: Clerk / Auth0 / Supabase Auth (JWT, short TTL + refresh)
-- Realtime: Socket.io or Supabase Realtime (polls, meetings)
-- Storage: S3 (covers, exports)
-- Infra: Vercel (web), Fly.io/Render (API), Neon/Postgres (DB), Upstash/Redis (cache + rate limit)
-- Testing: Vitest/Jest, Supertest, MSW, Playwright (web E2E), Detox (mobile E2E)
+- **Backend**: TypeScript + NestJS (Fastify) + Prisma on PostgreSQL
+- **Frontend**: Next.js (React) + TanStack Query + Tailwind CSS + shadcn/ui
+- **UI Components**: shadcn/ui built on Radix UI primitives with CVA
+- **Component Development**: Storybook 9+ with accessibility testing & auto-docs
+- **Search/Books**: Open Library API → Google Books fallback, cached locally
+- **Auth**: Clerk / Auth0 / Supabase Auth (JWT, short TTL + refresh)
+- **Realtime**: Socket.io or Supabase Realtime (polls, meetings)
+- **Storage**: S3 (covers, exports)
+- **Infra**: Vercel (web), Fly.io/Render (API), Neon/PostgreSQL (DB), Upstash/Redis (cache + rate limit)
+- **Testing**: Vitest/Jest, Supertest, MSW, Playwright (web E2E), Detox (mobile E2E)
+- **Mobile**: React Native (Expo), shared code via Turborepo
 
-1. Product Scope
+## Product Scope
 
-MVP
+### MVP
 
 - Authentication
 - User profile with 3 core shelves: TBR, READ, DNF
@@ -32,7 +34,7 @@ MVP
 - Shelf visibility (public | club | private)
 - Notifications (email + in-app)
 
-Phase 2
+### Phase 2
 
 - Ranked-choice voting (RCV)
 - Reading progress tracking
@@ -40,6 +42,44 @@ Phase 2
 - Calendar sync (ICS/Google/Outlook)
 - Goodreads/StoryGraph import
 - Recommendations & realtime chat
+
+## Component Development
+
+### UI System
+
+The application uses a comprehensive design system built with:
+
+- **shadcn/ui**: Pre-built accessible components using Radix UI primitives
+- **Tailwind CSS**: Utility-first styling with design tokens
+- **Class Variance Authority (CVA)**: Type-safe component variants
+- **Storybook**: Isolated component development and testing
+
+### Current Components
+
+**Core Book Club Components:**
+
+- `BookCard`: Displays book information with ratings, shelves, and actions
+- `ClubCard`: Shows club details with member count and meeting information
+- `MeetingCard`: Meeting details with RSVP functionality
+
+**UI Primitives (shadcn/ui):**
+
+- `Button`: Multiple variants (default, destructive, outline, secondary, ghost, link)
+- `Card`: Structured content container with header/content/footer
+- `Badge`: Status indicators and labels
+- `Avatar`: User profile images with fallback initials
+- `Separator`: Visual content dividers
+
+### Storybook Features
+
+- **Auto-generated Documentation**: Component props and usage examples
+- **Accessibility Testing**: Built-in a11y addon for WCAG compliance
+- **Theme Testing**: Dark/light mode preview and validation
+- **Responsive Testing**: Mobile, tablet, desktop viewport simulation
+- **Interactive Controls**: Real-time prop manipulation
+- **Visual Regression**: Screenshot comparisons for UI consistency
+
+Access the component library at `http://localhost:6006` during development.
 
 2. Domain Model
 

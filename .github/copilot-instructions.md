@@ -275,3 +275,7 @@ https://www.conventionalcommits.org
 ) format: `type(scope): summary`.
 
 * **Examples:** `feat(auth): add password reset endpoint`, `fix(api): correct error status code`.
+
+#### 9. Project Plan
+
+Always keep in mind the project scope and objectives outlined in the [project plan](../docs/project-plan.md). This will help guide your implementation and ensure alignment with the overall vision.

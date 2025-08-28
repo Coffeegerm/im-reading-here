@@ -303,7 +303,100 @@ Don’t
 
 ⸻
 
-11) Optional: Custom Brand Ramp
+11) Component Development with Storybook
+
+This project uses Storybook for isolated component development and testing. All UI components should include comprehensive stories that cover:
+
+**Required Story Types:**
+
+- Default: Basic component with minimal props
+- All Variants: Every variant/state combination
+- Interactive: With callbacks and state changes
+- Edge Cases: Long text, missing data, error states
+
+**Storybook Configuration:**
+
+- Auto-generated documentation from JSDoc comments
+- Accessibility testing with @storybook/addon-a11y
+- Dark/light theme switching
+- Responsive viewport testing
+- Interactive controls for real-time prop editing
+
+**Story Structure Example:**
+
+    import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+    import { BookCard } from './book-card'
+
+    const meta: Meta<typeof BookCard> = {
+      title: 'Components/BookCard',
+      component: BookCard,
+      parameters: { layout: 'centered' },
+      tags: ['autodocs'],
+    }
+
+    export const Default: Story = {
+      args: { title: 'Dune', authors: ['Frank Herbert'] }
+    }
+
+**Development Workflow:**
+
+1. Start Storybook: `pnpm storybook`
+2. Develop component in isolation
+3. Test all variants and states
+4. Verify accessibility compliance
+5. Check responsive behavior
+6. Test dark/light themes
+
+⸻
+
+12) shadcn/ui Integration
+
+Components use shadcn/ui built on Radix UI primitives with consistent styling:
+
+**Core Components Available:**
+
+- Button: Multiple variants with consistent sizing
+- Card: Structured content containers
+- Badge: Status indicators and labels
+- Avatar: User profile images with fallbacks
+- Separator: Visual content dividers
+
+**Component Patterns:**
+
+- Use forwardRef for all interactive components
+- Apply cn() utility for className merging
+- Implement proper TypeScript interfaces
+- Include proper accessibility attributes
+
+**Adding New Components:**
+
+    # Add new shadcn/ui component
+    npx shadcn-ui@latest add [component-name]
+
+**Custom Component Structure:**
+
+    import { cn } from "@/lib/utils"
+    import { forwardRef } from "react"
+
+    interface ComponentProps {
+      // Define props with proper TypeScript
+    }
+
+    const Component = forwardRef<HTMLDivElement, ComponentProps>(
+      ({ className, ...props }, ref) => {
+        return (
+          <div
+            ref={ref}
+            className={cn("base-styles", className)}
+            {...props}
+          />
+        )
+      }
+    )
+
+⸻
+
+13) Optional: Custom Brand Ramp
 
 If a custom brand hue is required instead of indigo, define a full ramp and keep the semantic alias:
 
