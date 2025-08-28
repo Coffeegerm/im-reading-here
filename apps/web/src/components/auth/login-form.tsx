@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { LoginSchema } from '../../lib/schemas';
+import { LoginSchema } from '@im-reading-here/shared';
 import { z } from 'zod';
 import { useLogin } from '../../hooks/use-auth-queries';
 import { Button } from '../ui/button';

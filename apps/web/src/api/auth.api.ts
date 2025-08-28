@@ -1,4 +1,4 @@
-import { LoginSchema, RegisterSchema, RefreshTokenSchema, ForgotPasswordSchema, ResetPasswordSchema } from '../lib/schemas';
+import { LoginSchema, RegisterSchema, RefreshTokenSchema, ForgotPasswordSchema, ResetPasswordSchema } from '@im-reading-here/shared';
 import { z } from 'zod';
 
 type LoginData = z.infer<typeof LoginSchema>;
@@ -41,9 +41,6 @@ class AuthApi {
 
   async register(data: RegisterData): Promise<AuthResponse> {
     const url = `${this.baseUrl}/auth/register`;
-    console.log('🚀 Making register request to:', url);
-    console.log('📋 Base URL:', this.baseUrl);
-    console.log('📧 Register data:', { email: data.email, name: data.name });
 
     const response = await fetch(url, {
       method: 'POST',

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi, AuthResponse, User } from '../api/auth.api';
-import { LoginSchema, RegisterSchema } from '../lib/schemas';
+import { LoginSchema, RegisterSchema } from '@im-reading-here/shared';
 import { z } from 'zod';
 
 type LoginData = z.infer<typeof LoginSchema>;

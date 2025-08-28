@@ -12,6 +12,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@im-reading-here/shared": "workspace:*",
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-separator": "^1.1.7",
@@ -50,10 +51,5 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4"
-  },
-  "eslintConfig": {
-    "extends": [
-      "plugin:storybook/recommended"
-    ]
   }
 }
