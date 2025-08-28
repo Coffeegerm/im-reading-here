@@ -159,7 +159,6 @@ GET  /api/v1/auth/me
 #### 3.1 Web App (Next.js) Integration
 ```typescript
 // Auth context and hooks
-src/contexts/auth-context.tsx
 src/hooks/use-auth.ts
 src/hooks/use-auth-redirect.ts
 
