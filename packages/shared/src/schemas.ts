@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// Auth schemas
+// Legacy auth schemas (use auth/schemas.ts for new auth implementation)
 export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
