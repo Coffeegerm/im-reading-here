@@ -4,7 +4,12 @@ import { AuthService } from './auth.service'
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard'
 import { CurrentUser } from './decorators/current-user.decorator'
 import { Public } from './decorators/public.decorator'
-import { UpdateProfileSchema, type UpdateProfileData, type AuthUser } from '@im-reading-here/shared'
+import {
+  UpdateProfileSchema,
+  type UpdateProfileData,
+  type AuthUser,
+  type SupabaseWebhookPayload
+} from '@im-reading-here/shared'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
 
 @ApiTags('Authentication')
@@ -47,13 +52,16 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        type: { type: 'string' },
+        type: { type: 'string', enum: ['INSERT', 'UPDATE', 'DELETE'] },
         table: { type: 'string' },
         record: { type: 'object' },
+        old_record: { type: 'object' },
+        schema: { type: 'string' },
       },
+      required: ['type', 'table', 'schema'],
     },
   })
-  async syncUser(@Body() webhookData: any): Promise<{ success: boolean }> {
+  async syncUser(@Body() webhookData: SupabaseWebhookPayload): Promise<{ success: boolean }> {
     return this.authService.handleSupabaseWebhook(webhookData)
   }
 }

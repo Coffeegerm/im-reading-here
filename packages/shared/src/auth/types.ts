@@ -62,3 +62,12 @@ export interface JwtPayload {
   iat: number
   exp: number
 }
+
+// Supabase webhook payload structure
+export interface SupabaseWebhookPayload {
+  type: 'INSERT' | 'UPDATE' | 'DELETE'
+  table: string
+  record?: SupabaseUser
+  old_record?: SupabaseUser
+  schema: string
+}

@@ -1,6 +1,13 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { createSupabaseAdminClient, type SupabaseConfig, type AuthUser, type UpdateProfileData } from '@im-reading-here/shared'
+import {
+  createSupabaseAdminClient,
+  type SupabaseConfig,
+  type AuthUser,
+  type UpdateProfileData,
+  type SupabaseUser,
+  type SupabaseWebhookPayload
+} from '@im-reading-here/shared'
 
 @Injectable()
 export class AuthService {
@@ -48,7 +55,7 @@ export class AuthService {
     }
   }
 
-  private async syncUserWithDatabase(supabaseUser: any): Promise<AuthUser> {
+  private async syncUserWithDatabase(supabaseUser: SupabaseUser): Promise<AuthUser> {
     const user = await this.prisma.user.upsert({
       where: { id: supabaseUser.id },
       update: {
@@ -110,11 +117,10 @@ export class AuthService {
     }
   }
 
-  async handleSupabaseWebhook(payload: any): Promise<{ success: boolean }> {
+  async handleSupabaseWebhook(payload: SupabaseWebhookPayload): Promise<{ success: boolean }> {
     try {
-      if (payload.type === 'INSERT' && payload.table === 'users') {
-        const userData = payload.record
-        await this.syncUserWithDatabase(userData)
+      if (payload.type === 'INSERT' && payload.table === 'users' && payload.record) {
+        await this.syncUserWithDatabase(payload.record)
       }
 
       return { success: true }
