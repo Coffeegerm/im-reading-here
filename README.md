@@ -67,6 +67,87 @@ This will start:
    - Web browser (press `w`)
    - Physical device via Expo Go app (scan QR code)
 
+## Environment Variables
+
+Each application requires specific environment variables to function properly. Copy the `.env.example` files and configure them for your environment.
+
+### API Server (`apps/api`)
+
+Create `apps/api/.env` from `apps/api/.env.example`:
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `DATABASE_URL` | ✅ | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/im_reading_here?schema=public` |
+| `SUPABASE_URL` | ✅ | Supabase project URL | `https://your-project.supabase.co` |
+| `SUPABASE_ANON_KEY` | ✅ | Supabase anonymous key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (server-side only) | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `SUPABASE_JWT_SECRET` | ✅ | JWT verification secret from Supabase | `your-jwt-secret` |
+| `JWT_SECRET` | ⚠️ | Legacy JWT secret (being phased out) | `your-super-secret-jwt-key` |
+| `JWT_EXPIRES_IN` | ❌ | Legacy JWT expiration | `15m` |
+| `JWT_REFRESH_EXPIRES_IN` | ❌ | Legacy refresh token expiration | `7d` |
+| `PORT` | ❌ | API server port | `3001` |
+| `NODE_ENV` | ❌ | Environment mode | `development` |
+| `OPEN_LIBRARY_API_URL` | ❌ | Open Library API endpoint | `https://openlibrary.org` |
+| `GOOGLE_BOOKS_API_URL` | ❌ | Google Books API endpoint | `https://www.googleapis.com/books/v1` |
+| `GOOGLE_BOOKS_API_KEY` | ❌ | Google Books API key (for enhanced features) | `your-api-key` |
+
+### Web Application (`apps/web`)
+
+Create `apps/web/.env.local` from `apps/web/.env.example`:
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | ✅ | API server URL | `http://localhost:3001` |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL | `https://your-project.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anonymous key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `NODE_ENV` | ❌ | Environment mode | `development` |
+
+### Mobile Application (`apps/mobile`)
+
+Create `apps/mobile/.env` from `apps/mobile/.env.example`:
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `EXPO_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL | `https://your-project.supabase.co` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anonymous key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+
+### Database (Docker Compose)
+
+The Docker Compose setup uses these environment variables for PostgreSQL:
+
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `POSTGRES_USER` | `postgres` | Database username |
+| `POSTGRES_PASSWORD` | `password` | Database password |
+| `POSTGRES_DB` | `im_reading_here` | Database name |
+
+### Getting Supabase Credentials
+
+1. Create a [Supabase](https://supabase.com) account
+2. Create a new project
+3. Go to **Settings** → **API**
+4. Copy your:
+   - Project URL (`SUPABASE_URL`)
+   - Anon/Public key (`SUPABASE_ANON_KEY`)
+   - Service role key (`SUPABASE_SERVICE_ROLE_KEY`)
+5. Go to **Settings** → **API** → **JWT Settings**
+6. Copy the JWT Secret (`SUPABASE_JWT_SECRET`)
+
+### Environment Setup Script
+
+You can use the provided setup script to quickly configure your environment:
+
+```bash
+./setup.sh
+```
+
+This script will:
+
+- Copy all `.env.example` files to their respective `.env` files
+- Start the Docker services
+- Run database migrations
+- Install dependencies
+
 ## Component Development
 
 This project includes a comprehensive Storybook setup for component development and testing:
