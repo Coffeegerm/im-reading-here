@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import { AuthService } from '@im-reading-here/shared'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../lib/supabase'
 
 export function useAuth() {
   const [loading, setLoading] = useState(false)
 
   const authService = useMemo(() => new AuthService({
     supabaseClient: supabase,
-    redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/reset-password`,
+    // Mobile doesn't need redirectTo for password reset
   }), [])
 
   const signIn = async (credentials: { email: string; password: string }) => {

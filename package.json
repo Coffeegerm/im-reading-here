@@ -15,7 +15,11 @@
     "story": "cd apps/web && pnpm storybook",
     "ui": "cd apps/web && pnpm storybook",
     "build-storybook": "cd apps/web && pnpm build-storybook",
-    "build-sb": "cd apps/web && pnpm build-storybook"
+    "build-sb": "cd apps/web && pnpm build-storybook",
+    "mobile": "cd apps/mobile && pnpm start",
+    "mobile:android": "cd apps/mobile && pnpm android",
+    "mobile:ios": "cd apps/mobile && pnpm ios",
+    "mobile:web": "cd apps/mobile && pnpm web"
   },
   "devDependencies": {
     "turbo": "^1.13.4",

@@ -54,6 +54,19 @@ This will start:
 - Web frontend at http://localhost:3000
 - API documentation at http://localhost:3001/api/docs
 
+6. **Start the mobile app (optional):**
+
+   ```bash
+   # From the root directory
+   pnpm mobile
+   ```
+
+   This will start the Expo development server. You can run the mobile app on:
+   - iOS simulator (press `i`)
+   - Android emulator (press `a`)
+   - Web browser (press `w`)
+   - Physical device via Expo Go app (scan QR code)
+
 ## Component Development
 
 This project includes a comprehensive Storybook setup for component development and testing:
@@ -86,6 +99,7 @@ This is a monorepo containing:
 
 - **`apps/api`** - NestJS REST API with Prisma ORM
 - **`apps/web`** - Next.js web application
+- **`apps/mobile`** - React Native mobile app with Expo
 
 ### Packages
 
@@ -95,6 +109,8 @@ This is a monorepo containing:
 
 - **Backend**: TypeScript + NestJS + Prisma + PostgreSQL
 - **Frontend**: Next.js + React + TanStack Query + Tailwind CSS + shadcn/ui
+- **Mobile**: React Native + Expo + AsyncStorage
+- **Shared**: Supabase authentication across web and mobile
 - **UI Components**: shadcn/ui built on Radix UI primitives
 - **Component Development**: Storybook with accessibility testing
 - **Database**: PostgreSQL with Prisma ORM
