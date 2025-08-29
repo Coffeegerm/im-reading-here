@@ -12,7 +12,7 @@ A modern book club management platform built with TypeScript, NestJS, Next.js, a
 
 ### Quick Start
 
-1. **Clone and install dependencies:**
+1. **Clone and install dependencies**
 
    ```bash
    git clone <repo-url>
@@ -20,13 +20,13 @@ A modern book club management platform built with TypeScript, NestJS, Next.js, a
    pnpm install
    ```
 
-2. **Start the database:**
+2. **Start the database**
 
    ```bash
    docker-compose up -d postgres
    ```
 
-3. **Set up the API environment:**
+3. **Set up the API environment**
 
    ```bash
    cd apps/api
@@ -34,14 +34,14 @@ A modern book club management platform built with TypeScript, NestJS, Next.js, a
    # Edit .env with your database connection details
    ```
 
-4. **Run database migrations:**
+4. **Run database migrations**
 
    ```bash
    cd apps/api
    pnpm db:push
    ```
 
-5. **Start the development servers:**
+5. **Start the development servers**
 
    ```bash
    # From the root directory
@@ -54,7 +54,7 @@ This will start:
 - Web frontend at http://localhost:3000
 - API documentation at http://localhost:3001/api/docs
 
-6. **Start the mobile app (optional):**
+6. **Start the mobile app (optional)**
 
    ```bash
    # From the root directory
@@ -93,7 +93,7 @@ See [STORYBOOK.md](./STORYBOOK.md) for detailed usage instructions.
 
 ## Architecture
 
-This is a monorepo containing:
+This is a monorepo containing
 
 ### Apps
 
@@ -103,7 +103,25 @@ This is a monorepo containing:
 
 ### Packages
 
-- **`packages/shared`** - Shared types, schemas, and utilities
+- **`packages/shared`** - Shared types, schemas, utilities, and design system
+
+## Design System
+
+This project uses a centralized design system to ensure consistency across web and mobile platforms
+
+- **Shared Tailwind Configuration**: Unified design tokens for colors, spacing, typography
+- **Platform-Specific Adaptations**: Web uses CSS variables, mobile uses direct values
+- **Design Tokens**: Exportable constants for use in JavaScript/TypeScript
+- **Documentation**: See `packages/shared/DESIGN_SYSTEM.md` for detailed usage
+
+```typescript
+// Using design tokens in code
+import { colors } from '@im-reading-here/shared'
+const primaryColor = colors.primary[600]
+
+// Using Tailwind classes (same across platforms)
+className="bg-primary-600 text-white rounded-lg p-4"
+```
 
 ## Tech Stack
 

@@ -1,7 +1,12 @@
-import AuthScreen from "@/src/screens/AuthScreen";
-import { Text, View } from "react-native";
+import React from "react";
+import { View } from "react-native";
+import AuthScreen from "../src/screens/AuthScreen";
+import { useAuthContext } from "@/src/contexts/AuthContext";
+import DashboardScreen from "@/src/screens/DashboardScreen";
 
 export default function Index() {
+  const { user } = useAuthContext();
+
   return (
     <View
       style={{
@@ -10,7 +15,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <AuthScreen />
+      {user ? <DashboardScreen /> : <AuthScreen />}
     </View>
   );
 }
