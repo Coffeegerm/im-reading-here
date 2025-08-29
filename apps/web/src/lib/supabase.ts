@@ -1,8 +1,9 @@
 import { createSupabaseClient, type SupabaseConfig } from '@im-reading-here/shared'
+import { config } from './config'
 
-const config: SupabaseConfig = {
-  url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+const supabaseConfig: SupabaseConfig = {
+  url: config.supabase.url,
+  anonKey: config.supabase.anonKey,
 }
 
-export const supabase = createSupabaseClient(config)
+export const supabase = createSupabaseClient(supabaseConfig)

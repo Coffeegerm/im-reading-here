@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
+import { apiFetch, apiEndpoints } from '@/lib/config'
 import { type AuthUser } from '@im-reading-here/shared'
 import type { Session } from '@supabase/supabase-js'
 
@@ -51,10 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await apiFetch(apiEndpoints.auth.me, { method: 'GET' }, token)
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
