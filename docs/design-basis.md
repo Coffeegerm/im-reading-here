@@ -4,7 +4,7 @@ This file defines the visual language, design tokens, and implementation guidanc
 
 ⸻
 
-1) Design Principles
+1. Design Principles
 
 - Clarity first: each screen should make the primary action unmistakable.
 - Accessibility always: meet or exceed WCAG AA; support reduced motion.
@@ -15,7 +15,7 @@ This file defines the visual language, design tokens, and implementation guidanc
 
 ⸻
 
-2) Tailwind Color Palette (Full Scales + Semantic Aliases)
+2. Tailwind Color Palette (Full Scales + Semantic Aliases)
 
 We alias Tailwind’s official scales so all 50–950 shades are available without maintaining hex values. Surfaces/text/borders are exposed as CSS variables for theming.
 
@@ -148,13 +148,14 @@ apps/web/app/globals.css (or global stylesheet)
 </div>
 
 Rule of thumb
+
 - CTAs: primary-600 → hover -700 → active -800
 - Destructive: danger-600/700
-- Info/success/warning backgrounds: *-50 with borders *-300 and text *-800
+- Info/success/warning backgrounds: _-50 with borders _-300 and text \*-800
 
 ⸻
 
-3) Core Tokens
+3. Core Tokens
 
 3.1 Typography
 
@@ -169,17 +170,17 @@ Rule of thumb
 - Weights: font-normal (400), font-medium (500), font-bold (700)
 - Line-height: use Tailwind defaults; increase for long reviews (leading-relaxed).
 
-3.2 Spacing (4px scale)
+  3.2 Spacing (4px scale)
 
 - Use Tailwind spacing (p-2, px-4, gap-6, etc.).
-Key steps: 4, 8, 12, 16, 24, 32, 48.
+  Key steps: 4, 8, 12, 16, 24, 32, 48.
 
-3.3 Radius & Elevation
+  3.3 Radius & Elevation
 
 - Radius: rounded-md (8px) default; Cards/Modals rounded-lg–rounded-2xl.
 - Shadows: prefer shadow for cards; reduce shadows in dark mode and rely on borders.
 
-3.4 Motion
+  3.4 Motion
 
 - Duration: 150–200ms for hover/focus; 250–300ms for panel transitions.
 - Easing: ease-out for entry; ease-in for exit.
@@ -187,7 +188,7 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 
 ⸻
 
-4) Component Guidelines (Web)
+4. Component Guidelines (Web)
 
 4.1 Buttons
 
@@ -196,23 +197,23 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 - Ghost: text-primary-700 hover:bg-primary-50 dark:hover:bg-neutral-800
 - Sizes: h-10 px-4 (md), h-12 px-5 (lg). Minimum touch target 44px on mobile.
 
-4.2 Inputs
+  4.2 Inputs
 
 - Base: bg-surface text-text placeholder:text-text-muted border border-border rounded-md h-10 px-3
 - Focus: focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
 - Error: add border-danger-500 and hint text text-danger-700.
 
-4.3 Cards
+  4.3 Cards
 
 - Base: bg-surface border border-border rounded-lg shadow-sm
 - Use gap-4 inside with consistent padding p-4–p-6.
 
-4.4 Navigation
+  4.4 Navigation
 
 - Mobile: bottom nav (max 5 items), icon (24px) + label (text-xs).
 - Web: left sidebar + topbar. Use active indicator text-primary-700 and border-l-2 border-primary-600.
 
-4.5 Feedback States
+  4.5 Feedback States
 
 - Loading: skeletons (animate-pulse) over spinners where possible.
 - Empty: icon + concise copy + primary CTA.
@@ -220,7 +221,7 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 
 ⸻
 
-5) Accessibility
+5. Accessibility
 
 - Contrast: body text on surface ≥ 4.5:1; large text ≥ 3:1.
 - Focus: always visible; Tailwind focus:ring-2 focus:ring-primary-500.
@@ -230,16 +231,16 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 
 ⸻
 
-6) Dark Mode
+6. Dark Mode
 
 - Toggle via <html class="dark"> or [data-theme="dark"].
 - Prefer borders to heavy shadows.
-- Avoid highly saturated large fills; use *-300–500 sparingly.
+- Avoid highly saturated large fills; use \*-300–500 sparingly.
 - Validate contrast on key components (buttons, inputs, alerts).
 
 ⸻
 
-7) Patterns & Layouts
+7. Patterns & Layouts
 
 - Grid: use CSS grid for shelves and club lists (grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6).
 - Responsive: start mobile-first; layer up at md and lg.
@@ -247,7 +248,7 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 
 ⸻
 
-8) RN/Expo Mapping (High-Level)
+8. RN/Expo Mapping (High-Level)
 
 - Create a thin token map in packages/ui to mirror Tailwind tokens for RN:
 - Colors: export semantic tokens (primary.600, text.muted, surface) via JS object.
@@ -257,7 +258,7 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 
 ⸻
 
-9) Example Snippets
+9. Example Snippets
 
 9.1 Meeting Card (Web)
 
@@ -282,10 +283,9 @@ Key steps: 4, 8, 12, 16, 24, 32, 48.
 <div class="rounded-md border border-danger-300 bg-danger-50 text-danger-800 p-4">Error</div>
 <div class="rounded-md border border-info-300 bg-info-50 text-info-800 p-4">Info</div>
 
-
 ⸻
 
-10) Do / Don’t
+10. Do / Don’t
 
 Do
 
@@ -303,7 +303,7 @@ Don’t
 
 ⸻
 
-11) Component Development with Storybook
+11. Component Development with Storybook
 
 This project uses Storybook for isolated component development and testing. All UI components should include comprehensive stories that cover:
 
@@ -349,7 +349,7 @@ This project uses Storybook for isolated component development and testing. All 
 
 ⸻
 
-12) shadcn/ui Integration
+12. shadcn/ui Integration
 
 Components use shadcn/ui built on Radix UI primitives with consistent styling:
 
@@ -396,7 +396,7 @@ Components use shadcn/ui built on Radix UI primitives with consistent styling:
 
 ⸻
 
-13) Optional: Custom Brand Ramp
+13. Optional: Custom Brand Ramp
 
 If a custom brand hue is required instead of indigo, define a full ramp and keep the semantic alias:
 
@@ -410,10 +410,9 @@ extend: {
   }
 }
 
-
 ⸻
 
-12) Developer Checklist
+12. Developer Checklist
 
 - Use semantic color aliases and CSS variables (no hex in components).
 - Provide visible focus states (focus:ring-2).
@@ -424,7 +423,162 @@ extend: {
 
 ⸻
 
-13) Quick Reference (Common Classes)
+13) Centralized Design System Implementation
+
+The design system is centralized in the `@im-reading-here/shared` package to ensure consistency across platforms and prevent drift between applications.
+
+13.1 Shared Tailwind Configuration
+
+Web App Configuration:
+
+    // apps/web/tailwind.config.js
+    const { createWebConfig } = require('@im-reading-here/shared/tailwind.config.js')
+    module.exports = createWebConfig()
+
+Mobile App Configuration:
+
+    // apps/mobile/tailwind.config.js
+    const { createMobileConfig } = require('@im-reading-here/shared/tailwind.config.js')
+    module.exports = createMobileConfig()
+
+Key Differences:
+
+- Web: Uses CSS variables for theming support (light/dark mode)
+- Mobile: Uses direct color values for React Native/NativeWind compatibility
+
+13.2 Design Tokens Export
+
+Access design tokens programmatically for custom components:
+
+    import { colors, spacing, borderRadius } from '@im-reading-here/shared'
+
+    // In JavaScript/TypeScript
+    const primaryColor = colors.primary[600] // '#5b21b6'
+    const cardPadding = spacing[4] // '1rem'
+    const cardRadius = borderRadius.lg // '0.5rem'
+
+    // In Tailwind classes
+    className="bg-primary-600 text-white p-4 rounded-lg"
+
+13.3 Component Patterns for Cross-Platform
+
+Primary Button (Web & Mobile):
+
+    <TouchableOpacity className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg">
+      <Text className="text-white font-semibold">Primary Action</Text>
+    </TouchableOpacity>
+
+Secondary Button:
+
+    <TouchableOpacity className="border border-neutral-300 text-neutral-700 font-semibold py-3 px-4 rounded-lg">
+      <Text className="text-neutral-700 font-semibold">Secondary Action</Text>
+    </TouchableOpacity>
+
+Input Fields:
+
+    <TextInput className="bg-white border border-neutral-300 rounded-lg px-4 py-3 text-base" />
+
+Cards:
+
+    <View className="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
+      {/* Card content */}
+    </View>
+
+13.4 Platform-Specific Considerations
+
+Web:
+
+- Supports CSS variables for theming
+- Includes hover states and transitions
+- Uses `tailwindcss-animate` plugin for animations
+
+Mobile:
+
+- Uses direct color values (no CSS variables)
+- Focus on touch-friendly sizing (minimum 44px targets)
+- Platform-specific components (SafeAreaView, KeyboardAvoidingView)
+
+13.5 Design System Best Practices
+
+1. Always use the shared Tailwind config - Never duplicate color definitions across apps
+2. Use semantic color names - `text-primary-600` not `text-purple-600`
+3. Consistent spacing - Use the spacing scale (4px increments) for margins, padding, gaps
+4. Mobile-first approach - Design for mobile, enhance for web
+5. Accessibility - Ensure sufficient color contrast (WCAG AA compliance)
+
+13.6 Extending the Design System
+
+Adding New Colors:
+
+1. Add to `packages/shared/tailwind.config.js`
+2. Add to `packages/shared/src/design-tokens.ts`
+3. Document usage patterns in this file
+
+Adding New Components:
+
+1. Create shared utility functions if needed
+2. Document platform-specific implementations
+3. Add examples to this documentation
+
+13.7 Migration Guide
+
+When updating existing styles:
+
+1. Replace hard-coded colors with design token classes
+2. Use consistent spacing values from the scale
+3. Replace custom animations with Tailwind utilities
+4. Test on both web and mobile platforms
+5. Verify accessibility compliance
+
+### Platform-Specific Considerations
+
+**Web:**
+
+- Supports CSS variables for theming
+- Includes hover states and transitions
+- Uses `tailwindcss-animate` plugin for animations
+
+**Mobile:**
+
+- Uses direct color values (no CSS variables)
+- Focus on touch-friendly sizing (minimum 44px targets)
+- Platform-specific components (SafeAreaView, KeyboardAvoidingView)
+
+### Design System Best Practices
+
+1. **Always use the shared Tailwind config** - Never duplicate color definitions across apps
+2. **Use semantic color names** - `text-primary-600` not `text-purple-600`
+3. **Consistent spacing** - Use the spacing scale (4px increments) for margins, padding, gaps
+4. **Mobile-first approach** - Design for mobile, enhance for web
+5. **Accessibility** - Ensure sufficient color contrast (WCAG AA compliance)
+
+### Extending the Design System
+
+**Adding New Colors:**
+
+1. Add to `packages/shared/tailwind.config.js`
+2. Add to `packages/shared/src/design-tokens.ts`
+3. Document usage patterns in this file
+
+**Adding New Components:**
+
+1. Create shared utility functions if needed
+2. Document platform-specific implementations
+3. Add examples to this documentation
+
+### Migration Guide
+
+When updating existing styles:
+
+1. Replace hard-coded colors with design token classes
+2. Use consistent spacing values from the scale
+3. Replace custom animations with Tailwind utilities
+4. Test on both web and mobile platforms
+5. Verify accessibility compliance
+
+⸻
+
+14) Quick Reference (Common Classes)
 
 - Primary button: bg-primary-600 hover:bg-primary-700 text-white
 - Secondary button: bg-surface border border-border text-primary-700

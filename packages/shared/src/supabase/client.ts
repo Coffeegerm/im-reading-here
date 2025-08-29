@@ -6,6 +6,10 @@ export interface SupabaseConfig {
   serviceRoleKey?: string
 }
 
+export interface SupabaseMobileConfig extends SupabaseConfig {
+  storage?: any // AsyncStorage for React Native
+}
+
 export function createSupabaseClient(config: SupabaseConfig): SupabaseClient {
   // In development, can return mock client if no Supabase URL provided
   if (!config.url && process.env.NODE_ENV === 'development') {
@@ -55,11 +59,15 @@ function createMockSupabaseClient(): SupabaseClient {
 }
 
 // Environment-aware client creation for mobile
-export function createSupabaseMobileClient(config: SupabaseConfig) {
+export function createSupabaseMobileClient(config: SupabaseMobileConfig): SupabaseClient {
+  if (!config.url && process.env.NODE_ENV === 'development') {
+    console.warn('Using local development mode - Supabase features disabled')
+    return createMockSupabaseClient()
+  }
+
   return createClient(config.url, config.anonKey, {
     auth: {
-      // Mobile will need AsyncStorage imported separately
-      // storage: AsyncStorage,
+      storage: config.storage, // AsyncStorage for React Native
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false, // Disabled for mobile
