@@ -1,14 +1,15 @@
-'use client'
-import { useAuthContext } from '@/components/auth/auth-provider'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+"use client";
+import { useAuthContext } from "@/components/auth/auth-provider";
+import { Input } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export function DashboardContent() {
-  const { user, signOut } = useAuthContext()
+  const { user, signOut } = useAuthContext();
 
   const handleSignOut = async () => {
-    await signOut()
-  }
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,11 +35,24 @@ export function DashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p><strong>Email:</strong> {user?.email}</p>
-                <p><strong>Name:</strong> {user?.name}</p>
-                <p><strong>Plan:</strong> {user?.plan}</p>
-                <p><strong>Shelves Visibility:</strong> {user?.shelvesVisibleTo}</p>
-                <p><strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</p>
+                <p>
+                  <strong>Email:</strong> {user?.email}
+                </p>
+                <p>
+                  <strong>Name:</strong> {user?.name}
+                </p>
+                <p>
+                  <strong>Plan:</strong> {user?.plan}
+                </p>
+                <p>
+                  <strong>Shelves Visibility:</strong> {user?.shelvesVisibleTo}
+                </p>
+                <p>
+                  <strong>Member since:</strong>{" "}
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "Unknown"}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -66,5 +80,5 @@ export function DashboardContent() {
         </div>
       </main>
     </div>
-  )
+  );
 }

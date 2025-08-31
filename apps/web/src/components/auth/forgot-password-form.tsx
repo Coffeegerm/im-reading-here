@@ -1,12 +1,13 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { ForgotPasswordSchema, type ForgotPasswordData } from '@im-reading-here/shared'
-import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { useAuth } from '@/hooks/use-auth'
 
 export function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false)

@@ -1,4 +1,5 @@
 import { createSupabaseClient, type SupabaseConfig } from '@im-reading-here/shared'
+
 import { config } from './config'
 
 const supabaseConfig: SupabaseConfig = {

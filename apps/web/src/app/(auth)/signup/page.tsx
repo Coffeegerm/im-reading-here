@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { RegisterForm } from '@/components/auth/register-form'
+
 import { GuestGuard } from '@/components/auth/auth-guard'
+import { RegisterForm } from '@/components/auth/register-form'
 
 export default function SignUpPage() {
   return (

@@ -1,9 +1,10 @@
 'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { supabase } from '@/lib/supabase'
-import { apiFetch, apiEndpoints } from '@/lib/config'
 import { type AuthUser } from '@im-reading-here/shared'
 import type { Session } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+
+import { apiFetch, apiEndpoints } from '@/lib/config'
+import { supabase } from '@/lib/supabase'
 
 interface AuthContextType {
   user: AuthUser | null

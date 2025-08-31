@@ -1,9 +1,10 @@
+import { CalendarIcon, MapPinIcon, VideoIcon, ClockIcon } from "lucide-react"
 import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn, formatDateTime } from "@/lib/utils"
-import { CalendarIcon, MapPinIcon, VideoIcon, ClockIcon } from "lucide-react"
 
 interface MeetingCardProps {
   title?: string

@@ -45,6 +45,7 @@
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-storybook": "^9.1.3",
     "playwright": "^1.55.0",
     "postcss": "^8.4.33",

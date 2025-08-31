@@ -1,5 +1,5 @@
-import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 import { GuestGuard } from '@/components/auth/auth-guard'
+import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 
 export default function ForgotPasswordPage() {
   return (

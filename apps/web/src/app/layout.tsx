@@ -1,8 +1,10 @@
 import './globals.css'
+import { QueryClient } from '@tanstack/react-query'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { QueryClient } from '@tanstack/react-query'
+
 import { QueryProvider } from './providers/query-provider'
+
 import { AuthProvider } from '@/components/auth/auth-provider'
 
 const inter = Inter({ subsets: ['latin'] })

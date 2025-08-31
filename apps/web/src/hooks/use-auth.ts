@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
 import { AuthService } from '@im-reading-here/shared'
+import { useState, useMemo } from 'react'
+
 import { supabase } from '@/lib/supabase'
 
 export function useAuth() {
