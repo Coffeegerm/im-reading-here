@@ -1,9 +1,9 @@
 import { Controller, Get, Put, Body, UseGuards, Post } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
-import { SupabaseAuthGuard } from './guards/supabase-auth.guard'
-import { CurrentUser } from './decorators/current-user.decorator'
-import { Public } from './decorators/public.decorator'
+import { SupabaseAuthGuard } from '../common/guards/supabase-auth.guard'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { Public } from '../common/decorators/public.decorator'
 import {
   UpdateProfileSchema,
   type UpdateProfileData,

@@ -1,32 +1,69 @@
 "use client";
+import { useState } from "react";
+
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { Input } from "@/components/ui";
+import { HeaderBar } from "@/components/common/header-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+const mock = [
+  {
+    id: 1,
+    name: "John Doe",
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+  },
+];
+
+function BookSearchCombobox() {
+  const [value, setValue] = useState("");
+
+  return (
+    <Command
+      inputMode="text"
+      className="rounded-lg  border-gray-400 text-txtWhite relative"
+    >
+      <CommandInput
+        className="h-full"
+        value={value}
+        onValueChange={(e) => setValue(e)}
+        placeholder="search..."
+      />
+      {value && (
+        <CommandList className="border-none">
+          <CommandEmpty>No results found</CommandEmpty>
+          <CommandGroup heading="Users">
+            {mock.map((item) => {
+              return (
+                <CommandItem key={item.id}>
+                  <span>{item.name}</span>
+                  <span>{item.id ?? ""}</span>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        </CommandList>
+      )}
+    </Command>
+  );
+}
 
 export function DashboardContent() {
-  const { user, signOut } = useAuthContext();
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const { user } = useAuthContext();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.name}!</span>
-              <Button onClick={handleSignOut} variant="outline">
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <HeaderBar />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <Card>

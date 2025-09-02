@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "concurrently \"cd packages/shared && pnpm dev\" \"turbo dev\"",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
@@ -16,15 +16,16 @@
     "ui": "cd apps/web && pnpm storybook",
     "build-storybook": "cd apps/web && pnpm build-storybook",
     "build-sb": "cd apps/web && pnpm build-storybook",
-    "mobile": "cd apps/mobile && pnpm start",
+    "mobile": "cd apps/mobile && pnpm dev:mobile",
     "mobile:android": "cd apps/mobile && pnpm android",
     "mobile:ios": "cd apps/mobile && pnpm ios",
     "mobile:web": "cd apps/mobile && pnpm web"
   },
   "devDependencies": {
+    "@types/node": "^20.19.11",
+    "concurrently": "^9.2.1",
     "turbo": "^1.13.4",
-    "typescript": "^5.9.2",
-    "@types/node": "^20.19.11"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18.0.0",
