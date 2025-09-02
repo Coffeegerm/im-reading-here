@@ -1,62 +1,9 @@
 "use client";
-import { useState } from "react";
-
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { BooksSearchCombobox } from "@/components/books/search-combobox";
 import { HeaderBar } from "@/components/common/header-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-
-const mock = [
-  {
-    id: 1,
-    name: "John Doe",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-  },
-];
-
-function BookSearchCombobox() {
-  const [value, setValue] = useState("");
-
-  return (
-    <Command
-      inputMode="text"
-      className="rounded-lg  border-gray-400 text-txtWhite relative"
-    >
-      <CommandInput
-        className="h-full"
-        value={value}
-        onValueChange={(e) => setValue(e)}
-        placeholder="search..."
-      />
-      {value && (
-        <CommandList className="border-none">
-          <CommandEmpty>No results found</CommandEmpty>
-          <CommandGroup heading="Users">
-            {mock.map((item) => {
-              return (
-                <CommandItem key={item.id}>
-                  <span>{item.name}</span>
-                  <span>{item.id ?? ""}</span>
-                </CommandItem>
-              );
-            })}
-          </CommandGroup>
-        </CommandList>
-      )}
-    </Command>
-  );
-}
 
 export function DashboardContent() {
   const { user } = useAuthContext();
@@ -64,6 +11,9 @@ export function DashboardContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <HeaderBar />
+
+      <BooksSearchCombobox />
+
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <Card>
