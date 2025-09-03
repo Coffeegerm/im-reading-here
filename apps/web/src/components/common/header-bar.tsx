@@ -1,6 +1,7 @@
-import { useAuthContext } from "../../providers/auth-provider";
+"use client";
 
 import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/providers/auth-provider";
 
 export const HeaderBar = () => {
   const { user, signOut } = useAuthContext();
@@ -10,12 +11,12 @@ export const HeaderBar = () => {
   };
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-surface shadow border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-text">Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <span className="text-gray-700">Welcome, {user?.name}!</span>
+            <span className="text-text-muted">Welcome, {user?.name}!</span>
             <Button onClick={handleSignOut} variant="outline">
               Sign Out
             </Button>
