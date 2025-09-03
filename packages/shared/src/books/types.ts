@@ -175,6 +175,7 @@ export interface NormalizedAuthor {
 // and then put them in our db for later use and easier indexing
 export interface NormalizedBookHit {
   // Identity
+  id: string // "OL82563W"
   workKey: string; // "/works/OL82563W"
   editionKey?: string; // "OL26331930M" (representative)
   // Display

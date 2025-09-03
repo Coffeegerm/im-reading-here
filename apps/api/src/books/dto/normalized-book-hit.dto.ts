@@ -77,6 +77,12 @@ export class OpenLibraryLinksDto {
 
 export class NormalizedBookHitDto {
   @ApiProperty({
+    description: 'Unique identifier for the book',
+    example: 'OL82563W',
+  })
+  id: string;
+
+  @ApiProperty({
     description: 'OpenLibrary work identifier',
     example: '/works/OL82563W',
   })
