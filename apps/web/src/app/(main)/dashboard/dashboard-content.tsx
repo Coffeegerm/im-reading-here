@@ -1,9 +1,9 @@
 "use client";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import { BooksSearchCombobox } from "@/components/books/search-combobox";
 import { HeaderBar } from "@/components/common/header-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { useAuthContext } from "@/providers/auth-provider";
 
 export function DashboardContent() {
   const { user } = useAuthContext();
@@ -12,9 +12,8 @@ export function DashboardContent() {
     <div className="min-h-screen bg-gray-50">
       <HeaderBar />
 
-      <BooksSearchCombobox />
-
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <BooksSearchCombobox />
         <div className="px-4 py-6 sm:px-0">
           <Card>
             <CardHeader>

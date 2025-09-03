@@ -1,4 +1,4 @@
-import { useAuthContext } from "../auth/auth-provider";
+import { useAuthContext } from "../../providers/auth-provider";
 
 import { Button } from "@/components/ui/button";
 

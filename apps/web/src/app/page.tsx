@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-import { useAuthContext } from '@/components/auth/auth-provider'
+import { useAuthContext } from '@/providers/auth-provider'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {

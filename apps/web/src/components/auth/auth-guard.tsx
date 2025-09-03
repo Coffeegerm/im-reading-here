@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-import { useAuthContext } from './auth-provider'
+import { useAuthContext } from '../../providers/auth-provider'
 
 interface AuthGuardProps {
   children: React.ReactNode
