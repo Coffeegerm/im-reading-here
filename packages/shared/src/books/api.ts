@@ -1,37 +1,24 @@
+import { generateUrlParams } from "../utils/url";
 import {
-  NormalizedBookHit,
   OpenLibraryWork,
   OpenLibrarySearchResponse,
   OpenLibraryEdition,
-} from "./types";
+} from "../types/OpenLibrary";
 import { normalizeSearchDoc, normalizeWorkDetails } from "./utils";
+import { NormalizedBookHit } from "./types";
 
-export async function searchBooks(query: string): Promise<NormalizedBookHit[]> {
+export async function searchBooks(params: {
+  q?: string;
+  title?: string;
+  author?: string;
+  page?: number;
+}): Promise<NormalizedBookHit[]> {
+  const queryParams = generateUrlParams(params);
   const response = await fetch(
-    `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`
+    `https://openlibrary.org/search.json${queryParams}`
   );
   const data = (await response.json()) as OpenLibrarySearchResponse;
   return data.docs.map(normalizeSearchDoc);
-}
-
-/**
- * Gets basic book details without fetching author names (uses placeholders).
- * Only use this when you need faster response times and don't need author names.
- *
- * @param id - The OpenLibrary work ID (e.g., "OL93230W")
- * @returns Promise resolving to normalized book data with placeholder author names, or null if not found
- */
-export async function getBookDetailsBasic(
-  id: string
-): Promise<NormalizedBookHit | null> {
-  const response = await fetch(`https://openlibrary.org/works/${id}.json`);
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const work = (await response.json()) as OpenLibraryWork;
-  return normalizeWorkDetails(work);
 }
 
 export async function getEditionDetails(
@@ -61,12 +48,14 @@ export function getBookCoverUrl(coverId?: number, size: "S" | "M" | "L" = "M") {
  * @param authorKey - The OpenLibrary author key (e.g., "/authors/OL29303A")
  * @returns Promise resolving to author data with name, or null if not found
  */
-export async function getAuthorDetails(authorKey: string): Promise<{ name: string } | null> {
+export async function getAuthorDetails(
+  authorKey: string
+): Promise<{ name: string } | null> {
   const response = await fetch(`https://openlibrary.org${authorKey}.json`);
   if (!response.ok) return null;
 
-  const author = await response.json() as { name?: string };
-  return { name: author.name || 'Unknown Author' };
+  const author = (await response.json()) as { name?: string };
+  return { name: author.name || "Unknown Author" };
 }
 
 /**
@@ -88,21 +77,25 @@ export async function getBookDetails(
   const work = (await response.json()) as OpenLibraryWork;
   const normalizedBook = normalizeWorkDetails(work);
 
+  console.log(work, normalizedBook);
+
   // Fetch author names if available
   if (work.authors && work.authors.length > 0) {
     try {
-      const authorPromises = work.authors.map(authorRef =>
+      const authorPromises = work.authors.map((authorRef) =>
         getAuthorDetails(authorRef.author.key)
       );
       const authorDetails = await Promise.all(authorPromises);
 
       normalizedBook.authors = work.authors.map((authorRef, index) => ({
         id: authorRef.author.key,
-        name: authorDetails[index]?.name || `Author ${authorRef.author.key.split('/').pop()}`,
+        name:
+          authorDetails[index]?.name ||
+          `Author ${authorRef.author.key.split("/").pop()}`,
       }));
     } catch (error) {
       // Fall back to placeholder names if author fetching fails
-      console.warn('Failed to fetch author details:', error);
+      console.warn("Failed to fetch author details:", error);
     }
   }
 

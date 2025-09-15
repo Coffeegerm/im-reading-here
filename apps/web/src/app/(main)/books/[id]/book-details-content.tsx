@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useBookDetails } from "@/hooks/use-books";
 
 interface BookDetailsContentProps {
@@ -16,22 +15,23 @@ export function BookDetailsContent({ bookId }: BookDetailsContentProps) {
   if (error) return <div>Error loading book details</div>;
 
   return (
-    <Card>
-      <CardHeader>
-        {book?.title ? `${book.title}` : `Book ${bookId}`}
-      </CardHeader>
-      <CardContent>
-        {book ? (
-          <div className="space-y-4">
-            {book.coverUrl && (
-              <Image
-                src={book.coverUrl}
-                alt={book.title}
-                width={200}
-                height={300}
-                className="rounded-md"
-              />
-            )}
+    <div>
+      {book ? (
+        <div className="flex flex-row gap-4">
+          {book.coverUrl && (
+            <Image
+              src={book.coverUrl}
+              alt={book.title}
+              width={200}
+              height={300}
+              className="rounded-md flex-shrink-0"
+            />
+          )}
+
+          <div>
+            <h2 className="text-2xl font-bold">
+              {book?.title ? `${book.title}` : `Book ${bookId}`}
+            </h2>
             <div>
               <h3 className="font-semibold">Authors:</h3>
               <p>
@@ -51,11 +51,17 @@ export function BookDetailsContent({ bookId }: BookDetailsContentProps) {
                 <p>{book.subjects.join(", ")}</p>
               </div>
             )}
+
+            {book.description?.length && (
+              <div>
+                <p className="whitespace-pre-line">{book.description}</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <p>Book details will go here...</p>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ) : (
+        <p>Book details will go here...</p>
+      )}
+    </div>
   );
 }

@@ -46,7 +46,7 @@ export class BooksController {
     type: ValidationErrorResponseDto,
   })
   async searchBooks(@Query("q") query: string) {
-    return this.booksService.searchBooks(query);
+    return this.booksService.searchBooks({ query });
   }
 
   @Get(":id")

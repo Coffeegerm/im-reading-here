@@ -1,4 +1,5 @@
-import { NormalizedBookHit, OpenLibraryDoc, OpenLibraryWork } from "./types";
+import { OpenLibraryDoc, OpenLibraryWork } from "../types/OpenLibrary";
+import { NormalizedBookHit } from "./types";
 
 export function normalizeWorkDetails(work: OpenLibraryWork): NormalizedBookHit {
   // Work identity
@@ -42,6 +43,12 @@ export function normalizeWorkDetails(work: OpenLibraryWork): NormalizedBookHit {
   // OpenLibrary URLs
   const olWorkUrl = `https://openlibrary.org${workKey}`;
 
+  const description = (
+    typeof work.description === "string"
+      ? work.description
+      : work.description?.value
+  )?.trim();
+
   return {
     id,
     workKey,
@@ -67,6 +74,7 @@ export function normalizeWorkDetails(work: OpenLibraryWork): NormalizedBookHit {
       edition: undefined,
       cover: coverLinks,
     },
+    description,
   };
 }
 

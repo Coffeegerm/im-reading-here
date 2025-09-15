@@ -11,7 +11,9 @@ export default function MainLayout({
         <HeaderBar />
       </div>
       <main className="flex-1">
-        {children}
+        <div className="bg-surface-muted max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          {children}
+        </div>
       </main>
     </div>
   );
