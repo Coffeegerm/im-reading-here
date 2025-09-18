@@ -5,40 +5,40 @@
 
 export const config = {
   api: {
-    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+    url: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   },
   supabase: {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
   },
-} as const
+} as const;
 
 // API endpoints
 export const apiEndpoints = {
   auth: {
-    me: '/api/v1/auth/me',
-    signin: '/api/v1/auth/signin',
-    signup: '/api/v1/auth/signup',
-    signout: '/api/v1/auth/signout',
-    refresh: '/api/v1/auth/refresh',
-    profile: '/api/v1/auth/profile',
-    syncUser: '/api/v1/auth/sync-user',
+    me: "/api/v1/auth/me",
+    signin: "/api/v1/auth/signin",
+    signup: "/api/v1/auth/signup",
+    signout: "/api/v1/auth/signout",
+    refresh: "/api/v1/auth/refresh",
+    profile: "/api/v1/auth/profile",
+    syncUser: "/api/v1/auth/sync-user",
   },
   users: {
-    base: '/api/v1/users',
+    base: "/api/v1/users",
     byId: (id: string) => `/api/v1/users/${id}`,
     clubs: (id: string) => `/api/v1/users/${id}/clubs`,
     shelves: (id: string) => `/api/v1/users/${id}/shelves`,
     customShelves: (id: string) => `/api/v1/users/${id}/custom-shelves`,
   },
   books: {
-    base: '/api/v1/books',
+    base: "/api/v1/books",
     byId: (id: string) => `/api/v1/books/${id}`,
-    search: '/api/v1/books/search',
-    import: '/api/v1/books/import',
+    search: "/api/v1/books/search",
+    import: "/api/v1/books/import",
   },
   clubs: {
-    base: '/api/v1/clubs',
+    base: "/api/v1/clubs",
     byId: (id: string) => `/api/v1/clubs/${id}`,
     memberships: (id: string) => `/api/v1/clubs/${id}/memberships`,
     meetings: (id: string) => `/api/v1/clubs/${id}/meetings`,
@@ -46,26 +46,26 @@ export const apiEndpoints = {
     readingPlans: (id: string) => `/api/v1/clubs/${id}/reading-plans`,
   },
   meetings: {
-    base: '/api/v1/meetings',
+    base: "/api/v1/meetings",
     byId: (id: string) => `/api/v1/meetings/${id}`,
     rsvp: (id: string) => `/api/v1/meetings/${id}/rsvp`,
   },
   polls: {
-    base: '/api/v1/polls',
+    base: "/api/v1/polls",
     byId: (id: string) => `/api/v1/polls/${id}`,
     votes: (id: string) => `/api/v1/polls/${id}/votes`,
   },
-  notifications: '/api/v1/notifications',
+  notifications: "/api/v1/notifications",
   realtime: {
-    token: '/api/v1/realtime/token',
+    token: "/api/v1/realtime/token",
   },
   uploads: {
-    presign: '/api/v1/uploads/presign',
+    presign: "/api/v1/uploads/presign",
   },
   exports: {
     clubIcs: (id: string) => `/api/v1/exports/clubs/${id}/ics`,
   },
-} as const
+} as const;
 
 /**
  * Creates a full API URL by combining the base API URL with an endpoint
@@ -77,7 +77,7 @@ export const apiEndpoints = {
  * // Use: createApiUrl(apiEndpoints.auth.me)
  */
 export function createApiUrl(endpoint: string): string {
-  return `${config.api.url}${endpoint}`
+  return `${config.api.url}${endpoint}`;
 }
 
 /**
@@ -101,22 +101,22 @@ export async function apiFetch(
   endpoint: string,
   options: RequestInit = {},
   token?: string
-): Promise<Response> {
-  const url = createApiUrl(endpoint)
+) {
+  const url = createApiUrl(endpoint);
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
-  }
+  };
 
   if (token) {
-    headers.Authorization = `Bearer ${token}`
+    headers.Authorization = `Bearer ${token}`;
   }
 
   return fetch(url, {
     ...options,
     headers,
-  })
+  });
 }
 
-export default config
+export default config;

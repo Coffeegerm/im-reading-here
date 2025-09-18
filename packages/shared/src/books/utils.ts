@@ -1,5 +1,5 @@
 import { OpenLibraryDoc, OpenLibraryWork } from "../types/OpenLibrary";
-import { NormalizedBookHit } from "./types";
+import { NormalizedBookHit } from "../types";
 
 export function normalizeWorkDetails(work: OpenLibraryWork): NormalizedBookHit {
   // Work identity

@@ -17,7 +17,7 @@ import {
   NormalizedBookHitDto,
   ErrorResponseDto,
   ValidationErrorResponseDto,
-} from "./dto";
+} from "../dto";
 
 @ApiTags("Books")
 @Controller("books")

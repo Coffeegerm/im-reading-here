@@ -5,7 +5,7 @@ import {
   OpenLibraryEdition,
 } from "../types/OpenLibrary";
 import { normalizeSearchDoc, normalizeWorkDetails } from "./utils";
-import { NormalizedBookHit } from "./types";
+import { NormalizedBookHit } from "../types";
 
 export async function searchBooks(params: {
   q?: string;

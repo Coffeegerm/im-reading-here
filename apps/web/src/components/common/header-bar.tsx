@@ -17,10 +17,18 @@ export const HeaderBar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
           <Link href="/dashboard" className="text-3xl font-bold text-text">
-            Dashboard
+            IRH!
           </Link>
           <div className="flex items-center space-x-4">
-            <span className="text-text-muted">Welcome, {user?.name}!</span>
+            {user && (
+              <span className="text-text-muted">
+                Welcome,{" "}
+                <Link className="font-semibold" href={`/user/${user?.id}`}>
+                  {user.name}
+                </Link>
+                !
+              </span>
+            )}
             <Button onClick={handleSignOut} variant="outline">
               Sign Out
             </Button>

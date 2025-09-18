@@ -1,31 +1,31 @@
-'use client'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+"use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import { useAuthContext } from '@/providers/auth-provider'
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/providers/auth-provider";
 
 export default function HomePage() {
-  const { user, loading } = useAuthContext()
-  const router = useRouter()
+  const { user, loading } = useAuthContext();
+  const router = useRouter();
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard')
+      router.push("/dashboard");
     }
-  }, [user, loading, router])
+  }, [user, loading, router]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   if (user) {
-    return null // Will redirect to dashboard
+    return null; // Will redirect to dashboard
   }
 
   return (
@@ -43,7 +43,8 @@ export default function HomePage() {
             <div className="bg-card p-6 rounded-lg border">
               <h2 className="text-2xl font-semibold mb-4">Get Started</h2>
               <p className="text-muted-foreground mb-6">
-                Join the community of book lovers and manage your reading clubs with ease.
+                Join the community of book lovers and manage your reading clubs
+                with ease.
               </p>
               <div className="flex gap-4 justify-center">
                 <Button asChild size="lg">
@@ -70,5 +71,5 @@ export default function HomePage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

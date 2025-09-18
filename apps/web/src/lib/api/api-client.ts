@@ -1,4 +1,4 @@
-import { config, apiFetch } from './config'
+import { config, apiFetch } from '../config'
 
 /**
  * Standard API client for making requests to the backend

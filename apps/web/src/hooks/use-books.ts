@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { bookClient } from "../lib/book-client";
+import { bookClient } from "../lib/api/book-client";
 
 export const useBooksSearch = (query: string) => {
   return useQuery({

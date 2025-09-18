@@ -1,51 +1,59 @@
-import { AuthService } from '@im-reading-here/shared'
-import { useState, useMemo } from 'react'
+import { AuthService } from "@im-reading-here/shared";
+import { useState, useMemo } from "react";
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from "@/lib/supabase";
 
 export function useAuth() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
-  const authService = useMemo(() => new AuthService({
-    supabaseClient: supabase,
-    redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/reset-password`,
-  }), [])
+  const authService = useMemo(
+    () =>
+      new AuthService({
+        supabaseClient: supabase,
+        redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/reset-password`,
+      }),
+    []
+  );
 
   const signIn = async (credentials: { email: string; password: string }) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      return await authService.signIn(credentials)
+      return await authService.signIn(credentials);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const signUp = async (credentials: { email: string; password: string; name: string }) => {
-    setLoading(true)
+  const signUp = async (credentials: {
+    email: string;
+    password: string;
+    name: string;
+  }) => {
+    setLoading(true);
     try {
-      return await authService.signUp(credentials)
+      return await authService.signUp(credentials);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const signOut = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      return await authService.signOut()
+      return await authService.signOut();
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const resetPassword = async (email: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      return await authService.resetPassword(email)
+      return await authService.resetPassword(email);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return {
     signIn,
@@ -53,5 +61,5 @@ export function useAuth() {
     signOut,
     resetPassword,
     loading,
-  }
+  };
 }
