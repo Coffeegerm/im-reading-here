@@ -1,6 +1,7 @@
 export * from './Common';
 export * from './OpenLibrary';
 export * from './Books';
+export * from './Auth';
 
 // Common types based on Prisma schema
 

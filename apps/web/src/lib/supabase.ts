@@ -1,6 +1,6 @@
 import { createSupabaseClient, type SupabaseConfig } from '@im-reading-here/shared'
 
-import { config } from './config'
+import { config } from './api/config'
 
 const supabaseConfig: SupabaseConfig = {
   url: config.supabase.url,

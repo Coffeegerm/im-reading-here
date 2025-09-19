@@ -84,7 +84,7 @@ export function createApiUrl(endpoint: string): string {
  * Enhanced fetch wrapper with automatic API URL construction and auth headers
  * @param endpoint - The API endpoint
  * @param options - Fetch options
- * @param token - Optional auth token (Bearer token)
+ * @param options.token - Optional auth token (Bearer token)
  * @returns Promise with the fetch response
  *
  * @example
@@ -99,8 +99,7 @@ export function createApiUrl(endpoint: string): string {
  */
 export async function apiFetch(
   endpoint: string,
-  options: RequestInit = {},
-  token?: string
+  options: RequestInit & { token?: string } = {}
 ) {
   const url = createApiUrl(endpoint);
 
@@ -109,8 +108,8 @@ export async function apiFetch(
     ...(options.headers as Record<string, string>),
   };
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
   }
 
   return fetch(url, {

@@ -1,9 +1,7 @@
 import { User } from "@im-reading-here/shared";
 
-import { apiEndpoints } from "../config";
-
 import { apiClient } from "./api-client";
-
+import { apiEndpoints } from "./config";
 
 class UsersClient {
   private readonly apiClient = apiClient;

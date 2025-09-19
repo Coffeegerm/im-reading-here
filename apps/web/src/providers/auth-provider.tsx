@@ -1,7 +1,6 @@
 "use client";
 import { type AuthUser } from "@im-reading-here/shared";
 import type { Session } from "@supabase/supabase-js";
-import { useQuery } from "@tanstack/react-query";
 import {
   createContext,
   useContext,
@@ -10,25 +9,9 @@ import {
   ReactNode,
 } from "react";
 
-import { apiFetch, apiEndpoints } from "@/lib/config";
+import { apiClient } from "@/lib/api/api-client";
+import { authClient } from "@/lib/api/auth-client";
 import { supabase } from "@/lib/supabase";
-
-const fetchUserProfile = async (token: string) => {
-  try {
-    const response = await apiFetch(
-      apiEndpoints.auth.me,
-      { method: "GET" },
-      token
-    );
-    if (response.ok) {
-      const userData = await response.json();
-      return userData as AuthUser;
-    }
-  } catch (error) {
-    console.error("Failed to fetch user profile:", error);
-  }
-  return null;
-};
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -53,8 +36,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        // Fetch full user profile from our API
-        const user = await fetchUserProfile(session.access_token);
+        apiClient.setToken(session.access_token);
+        const user = await authClient.getCurrentUser();
         setUser(user);
       }
       setLoading(false);
@@ -66,9 +49,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (session?.user) {
-        const user = await fetchUserProfile(session.access_token);
+        apiClient.setToken(session.access_token);
+        const user = await authClient.getCurrentUser();
         setUser(user);
       } else {
+        apiClient.setToken(null);
         setUser(null);
       }
       setLoading(false);
