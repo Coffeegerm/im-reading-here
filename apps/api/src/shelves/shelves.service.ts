@@ -21,15 +21,20 @@ export class ShelvesService {
     });
   }
 
-  createDefaultShelvesForUser(userId: string) {
-    const defaultShelves = Object.keys(SHELF_TYPE_MAP).map((name) => ({
-      name,
+  /**
+   * Default shelves are now created automatically by database trigger
+   * when a user is inserted. This method is kept for backward compatibility
+   * or manual shelf creation if needed.
+   */
+  async createDefaultShelvesForUser(userId: string) {
+    const defaultShelves = Object.entries(SHELF_TYPE_MAP).map(([name, type]) => ({
       userId,
-      type: SHELF_TYPE_MAP[name],
+      type,
     }));
 
-    this.prisma.shelf.createMany({
+    return this.prisma.shelf.createMany({
       data: defaultShelves,
+      skipDuplicates: true, // Prevent errors if shelves already exist
     });
   }
 

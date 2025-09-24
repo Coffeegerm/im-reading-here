@@ -32,6 +32,79 @@
         "panel": "new"
       },
       "detail": "📦 Build Storybook for production"
+    },
+    {
+      "label": "Start Supabase",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "supabase",
+        "start"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "🐘 Start Supabase local development stack"
+    },
+    {
+      "label": "Stop Supabase",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "supabase",
+        "stop"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      },
+      "detail": "🛑 Stop Supabase local development stack"
+    },
+    {
+      "label": "Restart Supabase",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "supabase",
+        "stop"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      },
+      "dependsOn": "Start Supabase",
+      "detail": "🔄 Restart Supabase local development stack"
+    },
+    {
+      "label": "Supabase Status",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "supabase",
+        "status"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      },
+      "detail": "📊 Check Supabase service status"
     }
   ]
 }

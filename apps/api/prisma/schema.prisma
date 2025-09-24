@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,11 +7,217 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id               String        @id @default(uuid()) @db.Uuid
+  email            String        @unique
+  name             String
+  avatarUrl        String?       @map("avatar_url")
+  plan             String        @default("FREE")
+  shelvesVisibleTo String        @default("club") @map("shelves_visible_to")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  clubs            Club[]        @relation("ClubOwner")
+  customShelves    CustomShelf[]
+  memberships      Membership[]
+  pollOptions      PollOption[]  @relation("PollProposer")
+  pollsCreated     Poll[]        @relation("PollCreator")
+  rsvps            Rsvp[]
+  shelves          Shelf[]
+  votes            Vote[]
+
+  @@map("users")
+}
+
+model Book {
+  id            String        @id @default(uuid()) @db.Uuid
+  isbn10        String?       @map("isbn10")
+  isbn13        String?       @map("isbn13")
+  openlibraryId String?       @map("openlibrary_id")
+  title         String
+  authors       String[]
+  coverUrl      String?       @map("cover_url")
+  publishedYear Int?          @map("published_year")
+  subjects      String[]
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  meetings      Meeting[]     @relation("MeetingCurrentBook")
+  pollOptions   PollOption[]
+  readingPlans  ReadingPlan[]
+  shelfItems    ShelfItem[]
+
+  @@map("books")
+}
+
+model Shelf {
+  id     String      @id @default(uuid()) @db.Uuid
+  userId String      @map("user_id") @db.Uuid
+  type   ShelfType
+  items  ShelfItem[]
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("shelves")
+}
+
+model CustomShelf {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @map("user_id") @db.Uuid
+  name       String
+  isArchived Boolean     @default(false) @map("is_archived")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      ShelfItem[]
+
+  @@unique([userId, name])
+  @@map("custom_shelves")
+}
+
+model ShelfItem {
+  id            String       @id @default(uuid()) @db.Uuid
+  shelfId       String?      @map("shelf_id") @db.Uuid
+  customShelfId String?      @map("custom_shelf_id") @db.Uuid
+  bookId        String       @map("book_id") @db.Uuid
+  addedAt       DateTime     @default(now()) @map("added_at")
+  rating        Int?         @db.SmallInt
+  review        String?
+  finishedAt    DateTime?    @map("finished_at")
+  book          Book         @relation(fields: [bookId], references: [id])
+  customShelf   CustomShelf? @relation(fields: [customShelfId], references: [id], onDelete: Cascade)
+  shelf         Shelf?       @relation(fields: [shelfId], references: [id], onDelete: Cascade)
+
+  @@map("shelf_items")
+}
+
+model Club {
+  id           String        @id @default(uuid()) @db.Uuid
+  ownerId      String        @map("owner_id") @db.Uuid
+  name         String
+  description  String?
+  isPublic     Boolean       @default(false) @map("is_public")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  owner        User          @relation("ClubOwner", fields: [ownerId], references: [id])
+  meetings     Meeting[]
+  memberships  Membership[]
+  polls        Poll[]
+  readingPlans ReadingPlan[]
+
+  @@map("clubs")
+}
+
+model Membership {
+  id       String       @id @default(uuid()) @db.Uuid
+  clubId   String       @map("club_id") @db.Uuid
+  userId   String       @map("user_id") @db.Uuid
+  role     MemberRole   @default(MEMBER)
+  status   MemberStatus @default(ACTIVE)
+  joinedAt DateTime     @default(now()) @map("joined_at")
+  club     Club         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@map("memberships")
+}
+
+model Meeting {
+  id                String        @id @default(uuid()) @db.Uuid
+  clubId            String        @map("club_id") @db.Uuid
+  startsAt          DateTime      @map("starts_at")
+  endsAt            DateTime?     @map("ends_at")
+  mode              MeetingMode
+  location          String?
+  videoLink         String?       @map("video_link")
+  agenda            String?
+  currentBookId     String?       @map("current_book_id") @db.Uuid
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  club              Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  currentBook       Book?         @relation("MeetingCurrentBook", fields: [currentBookId], references: [id])
+  polls             Poll[]
+  readingPlansEnd   ReadingPlan[] @relation("ReadingPlanEnd")
+  readingPlansStart ReadingPlan[] @relation("ReadingPlanStart")
+  rsvps             Rsvp[]
+
+  @@map("meetings")
+}
+
+model ReadingPlan {
+  id             String   @id @default(uuid()) @db.Uuid
+  clubId         String   @map("club_id") @db.Uuid
+  bookId         String   @map("book_id") @db.Uuid
+  startMeetingId String   @map("start_meeting_id") @db.Uuid
+  endMeetingId   String   @map("end_meeting_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+  book           Book     @relation(fields: [bookId], references: [id])
+  club           Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  endMeeting     Meeting  @relation("ReadingPlanEnd", fields: [endMeetingId], references: [id])
+  startMeeting   Meeting  @relation("ReadingPlanStart", fields: [startMeetingId], references: [id])
+
+  @@map("reading_plans")
+}
+
+model Poll {
+  id        String       @id @default(uuid()) @db.Uuid
+  clubId    String       @map("club_id") @db.Uuid
+  meetingId String?      @map("meeting_id") @db.Uuid
+  createdBy String       @map("created_by") @db.Uuid
+  status    PollStatus   @default(OPEN)
+  method    PollMethod   @default(APPROVAL)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  options   PollOption[]
+  club      Club         @relation(fields: [clubId], references: [id])
+  creator   User         @relation("PollCreator", fields: [createdBy], references: [id])
+  meeting   Meeting?     @relation(fields: [meetingId], references: [id])
+
+  @@map("polls")
+}
+
+model PollOption {
+  id             String @id @default(uuid()) @db.Uuid
+  pollId         String @map("poll_id") @db.Uuid
+  bookId         String @map("book_id") @db.Uuid
+  proposerUserId String @map("proposer_user_id") @db.Uuid
+  book           Book   @relation(fields: [bookId], references: [id])
+  poll           Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  proposer       User   @relation("PollProposer", fields: [proposerUserId], references: [id])
+  votes          Vote[]
+
+  @@unique([pollId, bookId])
+  @@map("poll_options")
+}
+
+model Vote {
+  id           String     @id @default(uuid()) @db.Uuid
+  pollOptionId String     @map("poll_option_id") @db.Uuid
+  voterUserId  String     @map("voter_user_id") @db.Uuid
+  approved     Boolean?
+  rank         Int?       @db.SmallInt
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id])
+  voter        User       @relation(fields: [voterUserId], references: [id])
+
+  @@unique([pollOptionId, voterUserId])
+  @@map("votes")
+}
+
+model Rsvp {
+  id        String     @id @default(uuid()) @db.Uuid
+  meetingId String     @map("meeting_id") @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  status    RsvpStatus
+  meeting   Meeting    @relation(fields: [meetingId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@unique([meetingId, userId])
+  @@map("rsvps")
+}
+
 enum ShelfType {
   TBR
-  READING
   READ
   DNF
+  READING
 }
 
 enum MemberRole {
@@ -48,237 +251,4 @@ enum RsvpStatus {
   GOING
   MAYBE
   NO
-}
-
-model User {
-  id               String   @id @default(uuid()) @db.Uuid
-  email            String   @unique
-  name             String
-  avatarUrl        String?  @map("avatar_url")
-  plan             String   @default("FREE") // FREE | PREMIUM
-  shelvesVisibleTo String   @default("club") @map("shelves_visible_to") // public|club|private
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  shelves       Shelf[]
-  customShelves CustomShelf[]
-  clubs         Club[]        @relation("ClubOwner")
-  memberships   Membership[]
-  pollsCreated  Poll[]        @relation("PollCreator")
-  pollOptions   PollOption[]  @relation("PollProposer")
-  votes         Vote[]
-  rsvps         Rsvp[]
-
-  @@map("users")
-}
-
-model Book {
-  id             String   @id @default(uuid()) @db.Uuid
-  isbn10         String?  @map("isbn10")
-  isbn13         String?  @map("isbn13")
-  openlibraryId  String?  @map("openlibrary_id")
-  title          String
-  authors        String[]
-  coverUrl       String?  @map("cover_url")
-  publishedYear  Int?     @map("published_year")
-  subjects       String[]
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  shelfItems    ShelfItem[]
-  meetings      Meeting[]   @relation("MeetingCurrentBook")
-  readingPlans  ReadingPlan[]
-  pollOptions   PollOption[]
-
-  @@map("books")
-}
-
-model Shelf {
-  id     String    @id @default(uuid()) @db.Uuid
-  userId String    @map("user_id") @db.Uuid
-  type   ShelfType
-
-  // Relations
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items ShelfItem[]
-
-  @@unique([userId, type])
-  @@map("shelves")
-}
-
-model CustomShelf {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @map("user_id") @db.Uuid
-  name       String
-  isArchived Boolean  @default(false) @map("is_archived")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items ShelfItem[]
-
-  @@unique([userId, name])
-  @@map("custom_shelves")
-  // Note: Should add case-insensitive unique constraint at database level: unique (user_id, lower(name))
-}
-
-model ShelfItem {
-  id             String    @id @default(uuid()) @db.Uuid
-  shelfId        String?   @map("shelf_id") @db.Uuid
-  customShelfId  String?   @map("custom_shelf_id") @db.Uuid
-  bookId         String    @map("book_id") @db.Uuid
-  addedAt        DateTime  @default(now()) @map("added_at")
-  rating         Int?      @db.SmallInt // 1-5
-  review         String?
-  finishedAt     DateTime? @map("finished_at")
-
-  // Relations
-  shelf       Shelf?       @relation(fields: [shelfId], references: [id], onDelete: Cascade)
-  customShelf CustomShelf? @relation(fields: [customShelfId], references: [id], onDelete: Cascade)
-  book        Book         @relation(fields: [bookId], references: [id])
-
-  @@map("shelf_items")
-}
-
-model Club {
-  id          String  @id @default(uuid()) @db.Uuid
-  ownerId     String  @map("owner_id") @db.Uuid
-  name        String
-  description String?
-  isPublic    Boolean @default(false) @map("is_public")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  owner        User          @relation("ClubOwner", fields: [ownerId], references: [id])
-  memberships  Membership[]
-  meetings     Meeting[]
-  readingPlans ReadingPlan[]
-  polls        Poll[]
-
-  @@map("clubs")
-}
-
-model Membership {
-  id       String       @id @default(uuid()) @db.Uuid
-  clubId   String       @map("club_id") @db.Uuid
-  userId   String       @map("user_id") @db.Uuid
-  role     MemberRole   @default(MEMBER)
-  status   MemberStatus @default(ACTIVE)
-  joinedAt DateTime     @default(now()) @map("joined_at")
-
-  // Relations
-  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([clubId, userId])
-  @@map("memberships")
-}
-
-model Meeting {
-  id            String      @id @default(uuid()) @db.Uuid
-  clubId        String      @map("club_id") @db.Uuid
-  startsAt      DateTime    @map("starts_at")
-  endsAt        DateTime?   @map("ends_at")
-  mode          MeetingMode
-  location      String?
-  videoLink     String?     @map("video_link")
-  agenda        String?
-  currentBookId String?     @map("current_book_id") @db.Uuid
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-
-  // Relations
-  club         Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  currentBook  Book?         @relation("MeetingCurrentBook", fields: [currentBookId], references: [id])
-  readingPlansStart ReadingPlan[] @relation("ReadingPlanStart")
-  readingPlansEnd   ReadingPlan[] @relation("ReadingPlanEnd")
-  polls        Poll[]
-  rsvps        Rsvp[]
-
-  @@map("meetings")
-}
-
-model ReadingPlan {
-  id             String @id @default(uuid()) @db.Uuid
-  clubId         String @map("club_id") @db.Uuid
-  bookId         String @map("book_id") @db.Uuid
-  startMeetingId String @map("start_meeting_id") @db.Uuid
-  endMeetingId   String @map("end_meeting_id") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  // Relations
-  club         Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  book         Book    @relation(fields: [bookId], references: [id])
-  startMeeting Meeting @relation("ReadingPlanStart", fields: [startMeetingId], references: [id])
-  endMeeting   Meeting @relation("ReadingPlanEnd", fields: [endMeetingId], references: [id])
-
-  @@map("reading_plans")
-}
-
-model Poll {
-  id        String     @id @default(uuid()) @db.Uuid
-  clubId    String     @map("club_id") @db.Uuid
-  meetingId String?    @map("meeting_id") @db.Uuid
-  createdBy String     @map("created_by") @db.Uuid
-  status    PollStatus @default(OPEN)
-  method    PollMethod @default(APPROVAL)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-
-  // Relations
-  club    Club         @relation(fields: [clubId], references: [id])
-  meeting Meeting?     @relation(fields: [meetingId], references: [id])
-  creator User         @relation("PollCreator", fields: [createdBy], references: [id])
-  options PollOption[]
-
-  @@map("polls")
-}
-
-model PollOption {
-  id             String @id @default(uuid()) @db.Uuid
-  pollId         String @map("poll_id") @db.Uuid
-  bookId         String @map("book_id") @db.Uuid
-  proposerUserId String @map("proposer_user_id") @db.Uuid
-
-  // Relations
-  poll     Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
-  book     Book   @relation(fields: [bookId], references: [id])
-  proposer User   @relation("PollProposer", fields: [proposerUserId], references: [id])
-  votes    Vote[]
-
-  @@unique([pollId, bookId])
-  @@map("poll_options")
-}
-
-model Vote {
-  id           String  @id @default(uuid()) @db.Uuid
-  pollOptionId String  @map("poll_option_id") @db.Uuid
-  voterUserId  String  @map("voter_user_id") @db.Uuid
-  approved     Boolean?
-  rank         Int?    @db.SmallInt
-
-  // Relations
-  pollOption PollOption @relation(fields: [pollOptionId], references: [id])
-  voter      User       @relation(fields: [voterUserId], references: [id])
-
-  @@unique([pollOptionId, voterUserId])
-  @@map("votes")
-}
-
-model Rsvp {
-  id        String     @id @default(uuid()) @db.Uuid
-  meetingId String     @map("meeting_id") @db.Uuid
-  userId    String     @map("user_id") @db.Uuid
-  status    RsvpStatus
-
-  // Relations
-  meeting Meeting @relation(fields: [meetingId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
-
-  @@unique([meetingId, userId])
-  @@map("rsvps")
 }

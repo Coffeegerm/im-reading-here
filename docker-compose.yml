@@ -1,4 +1,5 @@
 services:
+  # Fallback PostgreSQL (use when not using Supabase local)
   postgres:
     image: postgres:15
     restart: unless-stopped
@@ -7,9 +8,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: im_reading_here
     ports:
-      - "5432:5432"
+      - "5432:5432"  # Different port from Supabase (54322)
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    profiles:
+      - fallback  # Only start with: docker compose --profile fallback up
 
   redis:
     image: redis:7-alpine
