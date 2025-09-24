@@ -1,7 +1,41 @@
-import { AuthService } from "@im-reading-here/shared";
+import { AuthService, type AuthUser } from "@im-reading-here/shared";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 
+import { authClient } from "@/lib/api/auth-client";
 import { supabase } from "@/lib/supabase";
+
+export const authQueryKeys = {
+  currentUser: ["auth", "currentUser"] as const,
+} as const;
+
+export function useAuthUser(token: string | null) {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: authQueryKeys.currentUser,
+    queryFn: () => authClient.getCurrentUser(),
+    enabled: !!token, // Only fetch when we have a token
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    retry: (failureCount, error: any) => {
+      // Don't retry on 401/403 errors (auth failures)
+      if (error?.status === 401 || error?.status === 403) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+  });
+
+  const clearUserData = () => {
+    queryClient.removeQueries({ queryKey: authQueryKeys.currentUser });
+  };
+
+  return {
+    ...query,
+    clearUserData,
+  };
+}
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);

@@ -12,6 +12,7 @@ datasource db {
 
 enum ShelfType {
   TBR
+  READING
   READ
   DNF
 }

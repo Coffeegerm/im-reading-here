@@ -5,7 +5,7 @@ export * from './Auth';
 
 // Common types based on Prisma schema
 
-export type ShelfType = 'TBR' | 'READ' | 'DNF'
+export type ShelfType = 'READING' |'TBR' | 'READ' | 'DNF'
 export type MemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 export type MemberStatus = 'ACTIVE' | 'PENDING' | 'BANNED'
 export type MeetingMode = 'IN_PERSON' | 'VIRTUAL'
