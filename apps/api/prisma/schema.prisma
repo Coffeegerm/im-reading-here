@@ -17,7 +17,6 @@ model User {
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
   clubs            Club[]        @relation("ClubOwner")
-  customShelves    CustomShelf[]
   memberships      Membership[]
   pollOptions      PollOption[]  @relation("PollProposer")
   pollsCreated     Poll[]        @relation("PollCreator")
@@ -49,42 +48,33 @@ model Book {
 }
 
 model Shelf {
-  id     String      @id @default(uuid()) @db.Uuid
-  userId String      @map("user_id") @db.Uuid
-  type   ShelfType
-  items  ShelfItem[]
-  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, type])
-  @@map("shelves")
-}
-
-model CustomShelf {
   id         String      @id @default(uuid()) @db.Uuid
   userId     String      @map("user_id") @db.Uuid
-  name       String
+  type       ShelfType
+  name       String?     // Custom shelf name (required for CUSTOM type, null for predefined types)
   isArchived Boolean     @default(false) @map("is_archived")
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items      ShelfItem[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Custom shelf names must be unique per user (only applies when name is not null)
   @@unique([userId, name])
-  @@map("custom_shelves")
+  @@map("shelves")
 }
 
+
+
 model ShelfItem {
-  id            String       @id @default(uuid()) @db.Uuid
-  shelfId       String?      @map("shelf_id") @db.Uuid
-  customShelfId String?      @map("custom_shelf_id") @db.Uuid
-  bookId        String       @map("book_id") @db.Uuid
-  addedAt       DateTime     @default(now()) @map("added_at")
-  rating        Int?         @db.SmallInt
-  review        String?
-  finishedAt    DateTime?    @map("finished_at")
-  book          Book         @relation(fields: [bookId], references: [id])
-  customShelf   CustomShelf? @relation(fields: [customShelfId], references: [id], onDelete: Cascade)
-  shelf         Shelf?       @relation(fields: [shelfId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid()) @db.Uuid
+  shelfId    String    @map("shelf_id") @db.Uuid
+  bookId     String    @map("book_id") @db.Uuid
+  addedAt    DateTime  @default(now()) @map("added_at")
+  rating     Int?      @db.SmallInt
+  review     String?
+  finishedAt DateTime? @map("finished_at")
+  book       Book      @relation(fields: [bookId], references: [id])
+  shelf      Shelf     @relation(fields: [shelfId], references: [id], onDelete: Cascade)
 
   @@map("shelf_items")
 }
@@ -218,6 +208,7 @@ enum ShelfType {
   READ
   DNF
   READING
+  CUSTOM
 }
 
 enum MemberRole {

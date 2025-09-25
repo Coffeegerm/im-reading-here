@@ -1,12 +1,16 @@
-import { AuthUser, User } from "@im-reading-here/shared";
+import { User } from "@im-reading-here/shared";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
+import { ShelvesService } from "src/shelves/shelves.service";
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private shelvesService: ShelvesService
+  ) {}
 
-  async getUserById(userId: string): Promise<AuthUser | null> {
+  async getUserById(userId: string): Promise<User | null> {
     try {
       const user = await this.prisma.user.findUnique({
         where: { id: userId },

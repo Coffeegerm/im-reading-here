@@ -6,7 +6,6 @@ This directory contains comprehensive seeding scripts for local development of t
 
 - **`seed-data.ts`** - Shared seed data including users, books, clubs, and helper functions
 - **`seed.ts`** - Basic Prisma-only seed script (no authentication)
-- **`seed-with-supabase.ts`** - Full seed script with Supabase authentication integration
 - **`supabase-sync.ts`** - Utility for managing Supabase users independently
 
 ## 🚀 Quick Start
@@ -21,7 +20,7 @@ pnpm supabase:start
 pnpm db:reset
 
 # Or seed manually
-pnpm db:seed:supabase
+pnpm db:seed
 ```
 
 ### For Prisma Only
@@ -92,9 +91,6 @@ All test users are created with the password: **`password123`**
 pnpm db:reset
 
 # Seed with Supabase authentication
-pnpm db:seed:supabase
-
-# Seed Prisma only (no auth)
 pnpm db:seed
 ```
 
@@ -182,7 +178,7 @@ npx supabase restart
 ```bash
 # If reset fails, manually clean and migrate
 npx prisma migrate reset --force
-pnpm db:seed:supabase
+pnpm db:seed
 ```
 
 ### User Authentication Issues
@@ -222,7 +218,7 @@ This command will:
 
 ```bash
 # Just re-run seeding (keeps schema)
-pnpm db:seed:supabase
+pnpm db:seed
 
 # Or clean Prisma data only
 npx prisma migrate reset --skip-seed

@@ -84,7 +84,7 @@ pnpm db:seed
 # Or create Supabase Auth users first, then seed
 cd apps/api
 pnpm db:create-supabase-users
-pnpm db:seed:supabase
+pnpm db:seed
 ```
 
 ### 3. Resetting Database

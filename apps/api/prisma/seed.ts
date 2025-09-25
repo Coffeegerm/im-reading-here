@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ShelfType } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
 import {
   seedUsers,
   seedBooks,
@@ -10,8 +11,45 @@ import {
 
 const prisma = new PrismaClient();
 
+// Supabase configuration for local development
+const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
+async function createSupabaseUser(userData: typeof seedUsers[0], password: string = 'password123') {
+  try {
+    // Create user in Supabase Auth
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      password,
+      email_confirm: true, // Auto-confirm for local development
+      user_metadata: {
+        name: userData.name,
+        avatar_url: userData.avatarUrl,
+      },
+    });
+
+    if (authError) {
+      console.error(`❌ Failed to create Supabase user ${userData.email}:`, authError.message);
+      return null;
+    }
+
+    console.log(`  ✅ Created Supabase user: ${userData.name} (${userData.email})`);
+    return authUser.user;
+  } catch (error) {
+    console.error(`❌ Error creating Supabase user ${userData.email}:`, error);
+    return null;
+  }
+}
+
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Starting database seed with Supabase authentication...');
 
   // Clean existing data
   console.log('🧹 Cleaning existing data...');
@@ -24,10 +62,22 @@ async function main() {
   await prisma.membership.deleteMany({});
   await prisma.club.deleteMany({});
   await prisma.shelfItem.deleteMany({});
-  await prisma.customShelf.deleteMany({});
   await prisma.shelf.deleteMany({});
   await prisma.book.deleteMany({});
   await prisma.user.deleteMany({});
+
+  // Clean Supabase users (optional - be careful in production)
+  console.log('🧹 Cleaning Supabase auth users...');
+  try {
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    if (existingUsers?.users) {
+      for (const user of existingUsers.users) {
+        await supabase.auth.admin.deleteUser(user.id);
+      }
+    }
+  } catch (error) {
+    console.log('⚠️ Note: Could not clean existing Supabase users (this is okay for first run)');
+  }
 
   console.log('📚 Creating books...');
   const createdBooks = [];
@@ -48,11 +98,22 @@ async function main() {
     console.log(`  ✅ Created book: ${book.title}`);
   }
 
-  console.log('👥 Creating users...');
+  console.log('👥 Creating users with Supabase authentication...');
   const createdUsers = [];
+
   for (const userData of seedUsers) {
+    // Create user in Supabase Auth first
+    const supabaseUser = await createSupabaseUser(userData);
+
+    if (!supabaseUser) {
+      console.log(`  ⚠️ Skipping Prisma user creation for ${userData.email} due to Supabase error`);
+      continue;
+    }
+
+    // Create user in Prisma with Supabase UUID
     const user = await prisma.user.create({
       data: {
+        id: supabaseUser.id, // Use Supabase UUID
         email: userData.email,
         name: userData.name,
         avatarUrl: userData.avatarUrl,
@@ -61,7 +122,7 @@ async function main() {
       },
     });
     createdUsers.push(user);
-    console.log(`  ✅ Created user: ${user.name} (${user.email})`);
+    console.log(`  ✅ Created Prisma user: ${user.name} (${user.email})`);
 
     // Core shelves are automatically created by database trigger
     console.log(`    📂 Core shelves auto-created for ${user.name}`);
@@ -73,14 +134,20 @@ async function main() {
 
     const selectedShelfNames = helpers.randomElements(customShelfNames, numCustomShelves);
     for (const shelfName of selectedShelfNames) {
-      await prisma.customShelf.create({
+      await prisma.shelf.create({
         data: {
           userId: user.id,
+          type: ShelfType.CUSTOM,
           name: shelfName,
         },
       });
     }
     console.log(`    📋 Created ${numCustomShelves} custom shelves for ${user.name}`);
+  }
+
+  if (createdUsers.length === 0) {
+    console.error('❌ No users were created successfully. Cannot continue with seeding.');
+    return;
   }
 
   console.log('📖 Adding books to user shelves...');
@@ -89,20 +156,28 @@ async function main() {
       where: { userId: user.id },
     });
 
-    const userCustomShelves = await prisma.customShelf.findMany({
-      where: { userId: user.id },
-    });
-
-    // Add some books to each shelf
+    // Add some books to each shelf (both predefined and custom)
     for (const shelf of userShelves) {
-      const numBooks = Math.floor(Math.random() * 4) + 1; // 1-4 books per shelf
+      // Skip adding books to some custom shelves randomly
+      if (shelf.type === ShelfType.CUSTOM && Math.random() < 0.3) {
+        continue; // 30% chance of custom shelf being empty
+      }
+
+      const numBooks = shelf.type === ShelfType.CUSTOM ?
+        Math.floor(Math.random() * 3) + 1 : // 1-3 books for custom shelves
+        Math.floor(Math.random() * 4) + 1;  // 1-4 books for predefined shelves
+
       const selectedBooks = helpers.randomElements(createdBooks, numBooks);
 
       for (const book of selectedBooks) {
-        const rating = shelf.type === 'READ' ? helpers.randomRating() : null;
-        const review = shelf.type === 'READ' && Math.random() > 0.5 ?
+        const rating = shelf.type === ShelfType.READ ? helpers.randomRating() : null;
+        const review = shelf.type === ShelfType.READ && Math.random() > 0.5 ?
           helpers.generateReview(book.title, rating!) : null;
-        const finishedAt = shelf.type === 'READ' ? helpers.pastDate(Math.floor(Math.random() * 365)) : null;
+        const finishedAt = shelf.type === ShelfType.READ ? helpers.pastDate(Math.floor(Math.random() * 365)) : null;
+
+        const addedAt = shelf.type === ShelfType.CUSTOM ?
+          helpers.pastDate(Math.floor(Math.random() * 90)) :   // More recent for custom shelves
+          helpers.pastDate(Math.floor(Math.random() * 180));   // Longer range for predefined
 
         await prisma.shelfItem.create({
           data: {
@@ -111,27 +186,9 @@ async function main() {
             rating,
             review,
             finishedAt,
-            addedAt: helpers.pastDate(Math.floor(Math.random() * 180)),
+            addedAt,
           },
         });
-      }
-    }
-
-    // Add books to custom shelves
-    for (const customShelf of userCustomShelves) {
-      if (Math.random() > 0.3) { // 70% chance of having books in custom shelf
-        const numBooks = Math.floor(Math.random() * 3) + 1;
-        const selectedBooks = helpers.randomElements(createdBooks, numBooks);
-
-        for (const book of selectedBooks) {
-          await prisma.shelfItem.create({
-            data: {
-              customShelfId: customShelf.id,
-              bookId: book.id,
-              addedAt: helpers.pastDate(Math.floor(Math.random() * 90)),
-            },
-          });
-        }
       }
     }
   }
@@ -140,7 +197,10 @@ async function main() {
   const createdClubs = [];
   for (const clubData of seedClubs) {
     const owner = createdUsers.find(u => u.email === clubData.ownerEmail);
-    if (!owner) continue;
+    if (!owner) {
+      console.log(`  ⚠️ Skipping club ${clubData.name} - owner ${clubData.ownerEmail} not found`);
+      continue;
+    }
 
     const club = await prisma.club.create({
       data: {
@@ -165,7 +225,7 @@ async function main() {
 
     // Add other members
     const otherUsers = createdUsers.filter(u => u.id !== owner.id);
-    const numMembers = Math.floor(Math.random() * 4) + 2; // 2-5 additional members
+    const numMembers = Math.min(otherUsers.length, Math.floor(Math.random() * 4) + 2); // 2-5 additional members
     const members = helpers.randomElements(otherUsers, numMembers);
 
     for (const member of members) {
@@ -250,67 +310,69 @@ async function main() {
           where: { clubId: club.id, status: 'ACTIVE' },
         });
 
-        const creator = helpers.randomElement(members);
-        const status = Math.random() > 0.6 ? 'OPEN' : 'CLOSED';
-        const method = helpers.randomElement(['APPROVAL', 'RCV'] as const);
+        if (members.length > 0) {
+          const creator = helpers.randomElement(members);
+          const status = Math.random() > 0.6 ? 'OPEN' : 'CLOSED';
+          const method = helpers.randomElement(['APPROVAL', 'RCV'] as const);
 
-        const poll = await prisma.poll.create({
-          data: {
-            clubId: club.id,
-            meetingId: meeting.id,
-            createdBy: creator.userId,
-            status,
-            method,
-          },
-        });
-
-        // Add poll options
-        const numOptions = Math.floor(Math.random() * 3) + 2; // 2-4 options
-        const optionBooks = helpers.randomElements(createdBooks, numOptions);
-        const pollOptions = [];
-
-        for (const book of optionBooks) {
-          const proposer = helpers.randomElement(members);
-          const option = await prisma.pollOption.create({
+          const poll = await prisma.poll.create({
             data: {
-              pollId: poll.id,
-              bookId: book.id,
-              proposerUserId: proposer.userId,
+              clubId: club.id,
+              meetingId: meeting.id,
+              createdBy: creator.userId,
+              status,
+              method,
             },
           });
-          pollOptions.push(option);
-        }
 
-        // Add votes
-        for (const member of members) {
-          if (Math.random() > 0.3) { // 70% voting participation
-            for (const option of pollOptions) {
-              if (method === 'APPROVAL') {
-                if (Math.random() > 0.6) { // 40% approval rate per option
-                  await prisma.vote.create({
-                    data: {
-                      pollOptionId: option.id,
-                      voterUserId: member.userId,
-                      approved: true,
-                    },
-                  });
-                }
-              } else { // RCV
-                if (Math.random() > 0.4) { // 60% chance to rank this option
-                  await prisma.vote.create({
-                    data: {
-                      pollOptionId: option.id,
-                      voterUserId: member.userId,
-                      rank: Math.floor(Math.random() * numOptions) + 1,
-                    },
-                  });
+          // Add poll options
+          const numOptions = Math.floor(Math.random() * 3) + 2; // 2-4 options
+          const optionBooks = helpers.randomElements(createdBooks, numOptions);
+          const pollOptions = [];
+
+          for (const book of optionBooks) {
+            const proposer = helpers.randomElement(members);
+            const option = await prisma.pollOption.create({
+              data: {
+                pollId: poll.id,
+                bookId: book.id,
+                proposerUserId: proposer.userId,
+              },
+            });
+            pollOptions.push(option);
+          }
+
+          // Add votes
+          for (const member of members) {
+            if (Math.random() > 0.3) { // 70% voting participation
+              for (const option of pollOptions) {
+                if (method === 'APPROVAL') {
+                  if (Math.random() > 0.6) { // 40% approval rate per option
+                    await prisma.vote.create({
+                      data: {
+                        pollOptionId: option.id,
+                        voterUserId: member.userId,
+                        approved: true,
+                      },
+                    });
+                  }
+                } else { // RCV
+                  if (Math.random() > 0.4) { // 60% chance to rank this option
+                    await prisma.vote.create({
+                      data: {
+                        pollOptionId: option.id,
+                        voterUserId: member.userId,
+                        rank: Math.floor(Math.random() * numOptions) + 1,
+                      },
+                    });
+                  }
                 }
               }
             }
           }
-        }
 
-        console.log(`    🗳️ Created poll for ${club.name} with ${pollOptions.length} options`);
+          console.log(`    🗳️ Created poll for ${club.name} with ${pollOptions.length} options`);
+        }
       }
     }
   }
@@ -355,6 +417,13 @@ async function main() {
   console.log(`   📅 Meetings: ${totalMeetings}`);
   console.log(`   🗳️ Polls: ${totalPolls}`);
   console.log(`   📋 Shelf Items: ${totalShelfItems}`);
+
+  console.log('\n🔐 Test User Credentials:');
+  console.log('   All users have the password: password123');
+  console.log('   Test with any of these emails:');
+  for (const user of seedUsers) {
+    console.log(`   • ${user.email} (${user.name}, ${user.plan})`);
+  }
 }
 
 main()

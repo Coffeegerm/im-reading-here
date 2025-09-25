@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+
 import { Button } from "@/components";
 import {
   Dialog,
@@ -10,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useShelvesForUser } from "@/hooks/use-shelves";
 import { useUser } from "@/hooks/use-user";
 
 export function UserProfileContent({ userId }: { userId: string | "me" }) {
@@ -18,12 +21,31 @@ export function UserProfileContent({ userId }: { userId: string | "me" }) {
   return (
     <div>
       UserProfileContent for {userId}
-      <AddCustomShelfDialog />
+      <ShelfTable userId={userId} />
     </div>
   );
 }
 
-function AddCustomShelfDialog() {
+function ShelfTable({ userId }: { userId: string }) {
+  const { data: shelves } = useShelvesForUser(userId);
+
+  return (
+    <div>
+      <div className="flex flex-col">
+
+      {shelves?.map((shelf) => (
+        <Link href={`/shelves/${shelf.id}`} key={shelf.id}>
+          {shelf.name ? shelf.name : shelf.type}
+        </Link>
+      ))}
+
+      </div>
+      <AddCustomShelfButton />
+    </div>
+  );
+}
+
+function AddCustomShelfButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>

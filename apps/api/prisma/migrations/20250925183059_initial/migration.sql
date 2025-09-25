@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ShelfType" AS ENUM ('TBR', 'READ', 'DNF', 'READING');
+CREATE TYPE "ShelfType" AS ENUM ('TBR', 'READ', 'DNF', 'READING', 'CUSTOM');
 
 -- CreateEnum
 CREATE TYPE "MemberRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
@@ -55,27 +55,18 @@ CREATE TABLE "shelves" (
     "id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
     "type" "ShelfType" NOT NULL,
+    "name" TEXT,
+    "is_archived" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "shelves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "custom_shelves" (
-    "id" UUID NOT NULL,
-    "user_id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
-    "is_archived" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "custom_shelves_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "shelf_items" (
     "id" UUID NOT NULL,
-    "shelf_id" UUID,
-    "custom_shelf_id" UUID,
+    "shelf_id" UUID NOT NULL,
     "book_id" UUID NOT NULL,
     "added_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "rating" SMALLINT,
@@ -188,10 +179,7 @@ CREATE TABLE "rsvps" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "shelves_user_id_type_key" ON "shelves"("user_id", "type");
-
--- CreateIndex
-CREATE UNIQUE INDEX "custom_shelves_user_id_name_key" ON "custom_shelves"("user_id", "name");
+CREATE UNIQUE INDEX "shelves_user_id_name_key" ON "shelves"("user_id", "name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "memberships_club_id_user_id_key" ON "memberships"("club_id", "user_id");
@@ -209,13 +197,7 @@ CREATE UNIQUE INDEX "rsvps_meeting_id_user_id_key" ON "rsvps"("meeting_id", "use
 ALTER TABLE "shelves" ADD CONSTRAINT "shelves_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "custom_shelves" ADD CONSTRAINT "custom_shelves_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "shelf_items" ADD CONSTRAINT "shelf_items_book_id_fkey" FOREIGN KEY ("book_id") REFERENCES "books"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "shelf_items" ADD CONSTRAINT "shelf_items_custom_shelf_id_fkey" FOREIGN KEY ("custom_shelf_id") REFERENCES "custom_shelves"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "shelf_items" ADD CONSTRAINT "shelf_items_shelf_id_fkey" FOREIGN KEY ("shelf_id") REFERENCES "shelves"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -276,3 +258,25 @@ ALTER TABLE "rsvps" ADD CONSTRAINT "rsvps_meeting_id_fkey" FOREIGN KEY ("meeting
 
 -- AddForeignKey
 ALTER TABLE "rsvps" ADD CONSTRAINT "rsvps_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Create function to add default shelves for new users
+CREATE OR REPLACE FUNCTION create_default_shelves_for_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Create the four default shelf types for the new user
+    INSERT INTO shelves (id, user_id, type, name, is_archived, created_at, updated_at)
+    VALUES
+        (gen_random_uuid(), NEW.id, 'TBR', NULL, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), NEW.id, 'READ', NULL, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), NEW.id, 'DNF', NULL, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (gen_random_uuid(), NEW.id, 'READING', NULL, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically create default shelves when a user is inserted
+CREATE TRIGGER trigger_create_default_shelves_for_user
+    AFTER INSERT ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION create_default_shelves_for_user();

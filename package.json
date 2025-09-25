@@ -18,7 +18,7 @@
     "db:migrate": "cd apps/api && pnpm db:migrate",
     "db:push": "cd apps/api && pnpm db:push",
     "db:generate": "cd apps/api && pnpm db:generate",
-    "db:seed": "cd apps/api && pnpm db:seed:supabase",
+    "db:seed": "cd apps/api && pnpm db:seed",
     "storybook": "cd apps/web && pnpm storybook",
     "sb": "cd apps/web && pnpm storybook",
     "story": "cd apps/web && pnpm storybook",

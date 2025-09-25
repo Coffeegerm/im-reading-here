@@ -19,10 +19,9 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed:supabase": "tsx prisma/seed-with-supabase.ts",
     "db:create-supabase-users": "tsx prisma/supabase-sync.ts create",
     "db:sync-supabase-users": "tsx prisma/supabase-sync.ts sync",
-    "db:reset": "prisma migrate reset && pnpm db:seed:supabase"
+    "db:reset": "prisma migrate reset && pnpm db:seed"
   },
   "dependencies": {
     "@im-reading-here/shared": "workspace:*",

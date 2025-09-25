@@ -13,11 +13,13 @@ export const config = {
   },
 } as const;
 
+const API_BASE = '/api/v1'
+
 // API endpoints
 export const apiEndpoints = {
   auth: {
-    me: "/api/v1/auth/me",
-    signin: "/api/v1/auth/signin",
+    me: `${API_BASE}/auth/me`,
+    signin: '/api/v1/auth/signin',
     signup: "/api/v1/auth/signup",
     signout: "/api/v1/auth/signout",
     refresh: "/api/v1/auth/refresh",
@@ -29,7 +31,10 @@ export const apiEndpoints = {
     byId: (id: string) => `/api/v1/users/${id}`,
     clubs: (id: string) => `/api/v1/users/${id}/clubs`,
     shelves: (id: string) => `/api/v1/users/${id}/shelves`,
-    customShelves: (id: string) => `/api/v1/users/${id}/custom-shelves`,
+  },
+  shelves: {
+    base: "/api/v1/shelves",
+    byId: (shelfId: string) => `/api/v1/shelves/${shelfId}`,
   },
   books: {
     base: "/api/v1/books",

@@ -277,7 +277,6 @@ model User {
 
   // Relations remain the same in both environments
   shelves       Shelf[]
-  customShelves CustomShelf[]
   clubs         Club[]        @relation("ClubOwner")
   memberships   Membership[]
   pollsCreated  Poll[]        @relation("PollCreator")
